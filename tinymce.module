@@ -1,0 +1,171 @@
+<?php
+// $Id$
+// A collaborative project by Matt Westgate <drupal at asitis dot org>
+// and Richard Bennett <richard.b@gritechnologies.com>
+
+/**
+ * @file
+ * Integrate the TinyMCE editor (http://tinymce.moxiecode.com/) into Drupal.
+ */
+
+/**
+ * Implementation of hook_menu().
+ *
+ * Add the JavaScript file to the page head. Doing this in a menu hook is a
+ * little less expensive that in *_init since we don't need to load the head for
+ * Drupal-cached pages.
+ *
+ */
+function tinymce_menu($may_cache) {
+  if (!$may_cache) {
+    drupal_set_html_head('<script language="javascript" type="text/javascript" src="'. drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>');
+  }
+}
+
+/**
+ * Implementation of hook_help().
+ */
+function tinymce_help($section) {
+  switch ($section) {
+    case 'admin/modules#description':
+      return t('The TinyMCE Javascript HTML WYSIWYG editor.');
+
+    case 'admin/settings/tinymce#pages':
+      return "node/*\nuser/*\ncomment/*";
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function tinymce_perm() {
+  return array('use tinymce');
+}
+
+/**
+ * Implementation of hook_settings().
+ */
+function tinymce_settings() {
+  drupal_set_title(t('TinyMCE settings'));
+  $group = form_radios(t('Default theme'), 'tinymce_theme', variable_get('tinymce_theme', 'default'), _tinymce_get_themes());
+  $output = form_group('', $group);
+
+  $group = form_radios(t('Use TinyMCE'), 'tinymce_all', variable_get('tinymce_all', 1), array(t('on specific pages'), t('on all textareas')));
+  if (!variable_get('tinymce_all', 1)) {
+    $group .= form_textarea(t('Pages'), 'tinymce_pages', variable_get('tinymce_pages', tinymce_help('admin/settings/tinymce#pages')), 40, 5, t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are '<em>blog</em>' for the blog page and '<em>blog/*</em>' for every personal blog. '<em>&lt;front&gt;</em>' is the front page."));
+  }
+  $output .= form_group('', $group);
+  return $output;
+}
+
+function tinymce_textarea($op, $name) {
+  if (!user_access('use tinymce')) return NULL;
+
+  global $user;
+  $theme_name = $user->tinymce_theme ? $user->tinymce_theme : variable_get('tinymce_theme', 'default');
+
+  if ($op == 'pre' && _tinymce_page_match() && $user->tinymce_status) {
+    global $base_url;
+
+$output = <<<EOD
+<script language="javascript" type="text/javascript">
+  tinyMCE.init({
+    mode : "textareas",
+    theme : "$theme_name",
+    document_base_url : "$base_url/"
+  });
+</script>
+EOD;
+
+    return $output;
+  }
+}
+
+/**
+ * Implementation of hook_user().
+ */
+function tinymce_user($type, &$edit, &$user, $category = NULL) {
+  if ($type == 'form' && $category == 'account' && user_access('use tinymce')) {
+    $form = form_radios(t('Use TinyMCE'), 'tinymce_status', $edit['tinymce_status'], array(t('Disabled'), t('Enabled')));
+    if ($edit['tinymce_status']) {
+      $form .= form_radios(t('Default theme'), 'tinymce_theme', $edit['tinymce_theme'] ? $edit['tinymce_theme'] : variable_get('tinymce_theme', 'default'), _tinymce_get_themes());
+    }
+    else {
+      $form .= form_hidden('tinymce_theme', $edit['tinymce_theme']);
+    }
+    return array(array('title' => t('TinyMCE settings'), 'data' => $form));
+  }
+  if ($type == 'validate') {
+    // validate user data editing
+    return array('tinymce_theme' => $edit['tinymce_theme'], 'tinymce_status' => $edit['tinymce_status']);
+  }
+}
+
+/**
+ * Grab the themes available to TinyMCE.
+ *
+ * TinyMCE themes control the functionality and buttons that are available to a
+ * user. Themes are only looked for within the default TinyMCE theme directory.
+ *
+ * @return
+ *   An array of theme names.
+ */
+function _tinymce_get_themes() {
+  static $themes = array();
+
+  if (!$themes) {
+    $theme_loc = drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/themes/';
+    if (is_dir($theme_loc) && $dh = opendir($theme_loc)) {
+      while (($file = readdir($dh)) !== false) {
+        if ($file != '.' && $file != '..' && is_dir($theme_loc . $file)) {
+          $themes[$file] = $file;
+        }
+      }
+      closedir($dh);
+      asort($themes);
+    }
+  }
+
+  return $themes;
+}
+
+/**
+ * Determine if TinyMCE can render the current page.
+ *
+ * @return
+ *   TRUE if can render, FALSE if not allowed.
+ */
+function _tinymce_page_match() {
+  $edit = $_POST['edit'];
+
+  //Kill TinyMCE if we're editing a textarea with PHP in it!
+  if ($edit) {
+    if ($edit['format'] == 2) {
+      return FALSE;
+    }
+  }
+  else {
+    // PHP input formats are #2 in the filters table.
+    preg_match("|^node/(\d+)(/edit)$|", $_GET['q'], $match);
+    if (intval($match[1]) > 0) {
+      if (db_result(db_query('SELECT format FROM {node} WHERE nid = %d AND format = 2', $match[1]))) {
+        return FALSE;
+      }
+    }
+  }
+
+  if (variable_get('tinymce_all', 1)) {
+    return TRUE;
+  }
+  else {
+    $page_match = FALSE;
+    $pages = variable_get('tinymce_pages', tinymce_help('admin/settings/tinymce#pages'));
+    if ($pages) {
+      $path = drupal_get_path_alias($_GET['q']);
+      $regexp = '/^('. preg_replace(array('/(\r\n?|\n)/', '/\\\\\*/', '/(^|\|)\\\\<front\\\\>($|\|)/'), array('|', '.*', '\1'. variable_get('site_frontpage', 'node') .'\2'), preg_quote($pages, '/')) .')$/';
+      $page_match = preg_match($regexp, $path);
+    }
+    return $page_match;
+  }
+}
+?>
