@@ -59,8 +59,19 @@ the option of disabling TinyMCE completely.
 The admin can also define which pages TinyMCE should be used on.
 This cannot be changed on a per user basis.
 
-Tweaking a theme
------------------
+CAVEATS
+********************************************************************
+By default, Drupal uses the 'Filtered HTML' input format for adding
+content to the site and this can create conflicts with TinyMCE. It's
+best when using this editor to use an input format that has all
+filters disabled. What I usually do is create an input format called
+'Rich-text editing' and set that as the default format for roles which
+use TinyMCE exclusively. To modify your input formats go to:
+
+    Administer > input formats > configure > configure filters
+
+TWEAKING THE TINYMCE THEME
+********************************************************************
 
 Developers have complete control over the arguments which invoke a
 TinyMCE theme by creating a custom Drupal theme function.  In your
