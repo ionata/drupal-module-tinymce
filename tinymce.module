@@ -26,7 +26,7 @@ $js_extra = <<<EOD
     element = document.getElementById(id);
     link = document.getElementById(linkid);
 
-    if (element.togg == 'off') {
+    if (element.togg != 'on') {
       tinyMCE.addMCEControl(element, element.name);
       element.togg = 'on';
       link.innerHTML = '$disable';
@@ -158,7 +158,8 @@ $tinymce_invoke = <<<EOD
 </script>
 EOD;
 
-$link_text = t('disable rich-text');
+$link_text = variable_get('tinymce_default_state', 0) == 1 ? t('disable rich-text') : t('enable rich-text');
+$link_text = $user->tinymce_status == 1 ? t('disable rich-text') : t('enable rich-text');
 $disable = t('Your current web browser does not support WYSIWYG editing.');
 $wysiwyg_link = <<<EOD
 <script language="javascript" type="text/javascript">
@@ -189,8 +190,8 @@ EOD;
  */
 function tinymce_user($type, &$edit, &$user, $category = NULL) {
   if ($type == 'form' && $category == 'account' && user_access('access tinymce')) {
-    $user_status = $edit['tinymce_status'] != NULL ? $edit['tinymce_status'] : ($user->tinymce_status != NULL ? $user->tinymce_status : 1);
-    $form = form_radios(t('Status'), 'tinymce_status', $user_status, array(t('Disabled'), t('Enabled')), t('Would you like to enable rich-text editing of your content?'));
+    $user_status = $edit['tinymce_status'] != NULL ? $edit['tinymce_status'] : ($user->tinymce_status != NULL ? $user->tinymce_status : variable_get('tinymce_default_state', 0));
+    $form = form_radios(t('Default status'), 'tinymce_status', $user_status, array(t('Off'), t('On')), t('Should rich-text editing be enabled or disabled by default in textarea fields?'));
     return array(array('title' => t('TinyMCE settings'), 'data' => $form));
   }
   if ($type == 'validate') {
@@ -227,11 +228,26 @@ function tinymce_user($type, &$edit, &$user, $category = NULL) {
  *   once per request and not once per textarea.
  */
 function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
+  // Force the 'simple' theme for some of the smaller textareas.
+  switch ($textarea_name) {
+    case 'signature':
+    case 'site_mission':
+    case 'site_footer':
+    case 'settings][access_pages':
+      $init['theme'] = 'simple';
+      unset($init['theme_advanced_toolbar_location']);
+      unset($init['theme_advanced_toolbar_align']);
+      unset($init['theme_advanced_path_location']);
+      unset($init['theme_advanced_blockformats']);
+      unset($init['theme_advanced_styles']);
+      return $init;
+  }
+
   switch ($theme_name) {
     case 'advanced':
       $init['extended_valid_elements'] = 'a[href|target|name|title|onclick]';
       $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
-      $init['plugins'] = module_exist('img_assist') ? 'drupalimage,table,emotions,print' : 'table,emotions,print';
+      $init['plugins'] = file_exists(drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce/plugins/drupalimage') ? 'drupalimage,table,emotions,print' : 'table,emotions,print';
       $init['theme_advanced_buttons3_add'] = 'drupalimage,emotions,separator,print';
       return $init;
   }
@@ -336,11 +352,15 @@ function tinymce_admin($arg = NULL) {
  */
 function tinymce_config($profile) {
   global $base_url;
+  global $user;
 
   $settings = $profile['settings'];
 
   // Build a default list of TinyMCE settings.
-  $init['mode'] = 'textareas';
+
+  // Is tinymce on by default?
+  $init['mode'] = variable_get('tinymce_default_state', 0) == 1 ? 'textareas' : 'none';
+  $init['mode'] = $user->tinymce_status == 1 ? 'textareas' : 'none';
   $init['theme'] = $settings['theme'] ? $settings['theme'] : 'simple';
   $init['document_base_url'] = "$base_url/";
 
@@ -409,7 +429,7 @@ function tinymce_profile_form($edit) {
     $btn = t('Update profile');
   }
 
-  $group = form_textfield(t('Profile name'), 'name', $edit['name'], 40, 128, t('Enter an unique name for this profile. This name is only visible in the tinymce administration page.'));
+  $group = form_textfield(t('Profile name'), 'name', $edit['name'], 40, 128, t('Enter an unique name for this profile. This name is only visible in the tinymce administration page.'), NULL, TRUE);
   $group .= form_checkboxes(t('Roles allowed to use this profile'), 'rids', array_keys((array) $edit['rids']), $roles, t('Select at least one role.'), NULL, TRUE);
   $group .= form_radios(t('Theme'), 'settings][theme', $edit['settings']['theme'] ? $edit['settings']['theme'] : 'simple', _tinymce_get_themes(), t('Select the tinymce theme.'));
   $group .= form_radios(t('Make tinymce visible on'), 'settings][access', $edit['settings']['access'], array(t('specific pages'), t('all textareas')));
@@ -421,7 +441,7 @@ function tinymce_profile_form($edit) {
   $group = form_textfield(t('Editor width'), 'settings][width', $edit['settings']['width'], 3, 5, t('Set width of editor. Leave blank to use size of textarea being replaced.'));
   $group .= form_textfield(t('Editor height'), 'settings][height', $edit['settings']['height'], 3, 5, t('Set height of editor. Leave blank to use size of textarea being replaced.'));
   $group .= form_select(t('Toolbar location'), 'settings][toolbar_loc', $edit['settings']['toolbar_loc'], array('bottom' => 'bottom', 'top' => 'top'), t('Show toolbar at the top or bottom of the editor area?'));
-  $group .= form_select(t('Toolbar alignment'), 'settings][toolbar_align', $edit['settings']['toolbar_align'], array('left' => 'left', 'center' => 'center', 'right' => 'right'), t('Align tool icons left, center, or right within the toolbar.'));
+  $group .= form_select(t('Toolbar alignment'), 'settings][toolbar_align', $edit['settings']['toolbar_align'], array('center' => 'center', 'left' => 'left', 'right' => 'right'), t('Align tool icons left, center, or right within the toolbar.'));
   $group .= form_select(t('Path location'), 'settings][path_loc', $edit['settings']['path_loc'], array('none' => 'none', 'top' => 'top', 'bottom' => 'bottom'), t('Path to html elements (i.e. "body>table>tr>td"). Show at top, bottom, or not at all.'));
   $output .= form_group(t('Editor display'), $group);
 
@@ -491,11 +511,9 @@ function tinymce_profile_overview() {
     $output .= t('<p>No profiles found.</p>');
   }
 
-  /*
   $group = form_radios(t('Default tinymce state'), 'tinymce_default_state', variable_get('tinymce_default_state', 0), array(t('Off'), t('On')), t('Should tinymce be enabled or disabled by default when it\'s first loaded from a textarea?'));
   $output .= form_group(t('Default settings'), $group);
   $output .= form_submit(t('Save settings'));
-  */
 
   return form($output);
 }
@@ -541,10 +559,8 @@ function tinymce_profile_validate($edit) {
  */
 function _tinymce_page_match($edit) {
   //Kill TinyMCE if we're editing a textarea with PHP in it!
-  if ($edit) {
-    if ($edit['format'] == 2) {
-      return FALSE;
-    }
+  if ($_POST['edit']['format'] == 2) {
+    return FALSE;
   }
   else {
     // PHP input formats are #2 in the filters table.
