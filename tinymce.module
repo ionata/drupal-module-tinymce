@@ -63,8 +63,9 @@ function tinymce_textarea($op, $name) {
 
   global $user;
   $theme_name = $user->tinymce_theme ? $user->tinymce_theme : variable_get('tinymce_theme', 'default');
+  $user_status = $user->tinymce_status != NULL ? $user->tinymce_status : TRUE;
 
-  if ($op == 'pre' && _tinymce_page_match() && $user->tinymce_status) {
+  if ($op == 'pre' && _tinymce_page_match() && $user_status) {
     global $base_url;
 
 $output = <<<EOD
