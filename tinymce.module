@@ -92,7 +92,7 @@ function tinymce_img_assist_on_submit() {
  * Implementation of hook_settings().
  */
 function tinymce_settings() {
-  drupal_set_title(t('TinyMCE settings (v $Revision$)');
+  drupal_set_title(t('TinyMCE settings ($Revision$)'));
 
   //Check if TinyMCE is installed.
   $tinymce_loc = drupal_get_path('module', 'tinymce') .'/tinymce/';
