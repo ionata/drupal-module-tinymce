@@ -185,7 +185,7 @@ function _tinymce_get_themes() {
     $theme_loc = drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/themes/';
     if (is_dir($theme_loc) && $dh = opendir($theme_loc)) {
       while (($file = readdir($dh)) !== false) {
-        if ($file != '.' && $file != '..' && is_dir($theme_loc . $file)) {
+        if (!in_array($file, array('.', '..', 'CVS')) && is_dir($theme_loc . $file)) {
           $themes[$file] = $file;
         }
       }
