@@ -20,8 +20,14 @@ INSTALLATION:
 2. Download TinyMCE 1.43 from:
 
      http://tinymce.moxiecode.com/download.php
-
+     
    Uncompress the file and make sure it's named 'tinymce'.
+     
+   Note: The TinyMCE 1.43 has a few bugs, for instance an error when clicking 
+   a textarea in Firefox. Using the latest CVS version solved this for me, 
+   but might be broken in otherways when you try it:
+   
+     http://sourceforge.net/cvs/?group_id=103281 
 
 3. Place the entire tinymce folder inside your modules/tinymce directory.
 
