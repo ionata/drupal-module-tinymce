@@ -93,7 +93,7 @@ function tinymce_img_assist_on_submit() {
  * Implementation of hook_settings().
  */
 function tinymce_settings() {
-  drupal_set_title(t('TinyMCE settings ($Revision$)'));
+  drupal_set_title(t('TinyMCE settings (%revision)', array('%revision' => '$Revision$')));
 
   //Check if TinyMCE is installed.
   $tinymce_loc = drupal_get_path('module', 'tinymce') .'/tinymce/';
@@ -206,7 +206,7 @@ function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
       $init['extended_valid_elements'] = 'a[href|target|name]';
       $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
       $init['plugins'] = module_exist('img_assist') ? 'drupalimage,table,emotions,print' : 'table,emotions,print';
-      $init['theme_advanced_buttons3_add'] = 'emotions,iespell,separator,print';
+      $init['theme_advanced_buttons3_add'] = 'emotions,separator,print';
       return $init;
   }
 }
