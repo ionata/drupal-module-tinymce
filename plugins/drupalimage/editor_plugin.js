@@ -4,7 +4,7 @@
 function TinyMCE_drupalimage_getInsertImageTemplate() {
   var template = new Array();
 
-  template['file'] = baseUrl + '/index.php?q=img_assist/add&editor=tinymce';
+  template['file'] = 'index.php?q=img_assist/add&editor=tinymce';
   template['width'] = 500;
   template['height'] = 660;
 
