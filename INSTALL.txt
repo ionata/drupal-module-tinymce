@@ -20,24 +20,33 @@ INSTALLATION:
 2. Download TinyMCE 1.43 from:
 
      http://tinymce.moxiecode.com/download.php
-     
+
    Uncompress the file and make sure it's named 'tinymce'.
-     
-   Note: The TinyMCE 1.43 has a few bugs, for instance an error when clicking 
-   a textarea in Firefox. Using the latest CVS version solved this for me, 
+
+   Note: The TinyMCE 1.43 has a few bugs, for instance an error when clicking
+   a textarea in Firefox. Using the latest CVS version solved this for me,
    but might be broken in otherways when you try it:
-   
-     http://sourceforge.net/cvs/?group_id=103281 
+
+     http://sourceforge.net/cvs/?group_id=103281
 
 3. Place the entire tinymce folder inside your modules/tinymce directory.
+
+4. Load the database definition file (tinymce.mysql) using the
+   tool of your choice (e.g. phpmyadmin). For mysql and command line
+   access use:
+
+     mysql -u user -p drupal < tinymce.mysql
+
+   Replace 'user' with the MySQL username, and 'drupal' with the
+   database being used.
 
 4. Enable this module by navigating to:
 
      administer > modules
 
-5. Optionally, fine tune how this module operates by navigating to:
+5. Optionally, setup role based tinymce profiles via
 
-     administer > settings > tinymce
+     administer > tinymce
 
 Create new content and see TinyMCE in action!
 

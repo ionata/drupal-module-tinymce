@@ -1,16 +1,36 @@
+/* Import plugin specific language pack */
+tinyMCE.importPluginLanguagePack('drupalimage', 'en');
+
 /**
- * Insert image template function.
+ * Returns the HTML contents of the emotions control.
  */
-function TinyMCE_drupalimage_getInsertImageTemplate() {
-  var template = new Array();
+function TinyMCE_drupalimage_getControlHTML(control_name) {
+	switch (control_name) {
+		case "drupalimage":
+			return '<img id="{$editor_id}_drupalimage" src="{$pluginurl}/images/camera.png" title="{$lang_drupalimage_desc}" width="20" height="20" class="mceButtonNormal" onmouseover="tinyMCE.switchClass(this,\'mceButtonOver\');" onmouseout="tinyMCE.restoreClass(this);" onmousedown="tinyMCE.restoreAndSwitchClass(this,\'mceButtonDown\');" onclick="tinyMCE.execInstanceCommand(\'{$editor_id}\',\'mceDrupalimage\');">';
+	}
 
-  template['file'] = 'index.php?q=img_assist/add&editor=tinymce';
-  template['width'] = 500;
-  template['height'] = 660;
+	return "";
+}
 
-  // Language specific width and height addons
-  template['width']  += tinyMCE.getLang('lang_insert_image_delta_width', 0);
-  template['height'] += tinyMCE.getLang('lang_insert_image_delta_height', 0);
+/**
+ * Executes the mceEmotion command.
+ */
+function TinyMCE_drupalimage_execCommand(editor_id, element, command, user_interface, value) {
+	// Handle commands
+	switch (command) {
+		case "mceDrupalimage":
+			var template = new Array();
 
-  return template;
+			template['file'] = 'index.php?q=img_assist/add&editor=tinymce'; // Relative to theme
+			template['width'] = 500;
+			template['height'] = 660;
+
+			tinyMCE.openWindow(template, {editor_id : editor_id});
+
+			return true;
+	}
+
+	// Pass to next handler in chain
+	return false;
 }
