@@ -19,7 +19,8 @@
 function tinymce_menu($may_cache) {
   global $base_url;
   if (!$may_cache) {
-    drupal_set_html_head('<script language="javascript" type="text/javascript" src="'. drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>');
+    // For some crazy reason IE will only load this JS file if the absolute reference is given to it.
+    drupal_set_html_head('<script language="javascript" type="text/javascript" src="'. $base_url . '/'. drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>');
     //We may need this so TinyMCE has the right path to Drupal to invoke drupal tinymce plugins.
     //drupal_set_html_head('<script language="javascript" type="text/javascript"> var baseUrl = "'. $base_url .'"; </script>');
     // We have to do this becuase of some unfocused CSS in certain themes. See http://drupal.org/node/18879 for details
@@ -135,7 +136,7 @@ function tinymce_textarea($op, $name) {
     foreach ($init as $k => $v) {
       $settings[] = $k. ' : "'. $v. '"';
     }
-    $tinymce_settings = implode(",\n", $settings);
+    $tinymce_settings = implode(",\n    ", $settings);
 
 $output = <<<EOD
 <script language="javascript" type="text/javascript">
@@ -150,7 +151,7 @@ EOD;
     // the themed functions know what's going on.
     if (!$is_running) {
       $is_running = TRUE;
-      return $output;
+      drupal_set_html_head($output);
     }
   }
 }
