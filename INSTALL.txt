@@ -63,23 +63,46 @@ Tweaking a theme
 -----------------
 
 Developers have complete control over the arguments which invoke a
-TinyMCE theme by creating a custom Drupal theme function.  For
-example, say you want change the way the 'advanced' theme behaves.
-In your Drupal theme file create a new function as follows:
+TinyMCE theme by creating a custom Drupal theme function.  In your
+Drupal theme file create a new function called tinymce_theme:
 
-function tinymce_advanced($init) {
-  $init['extended_valid_elements'] = 'a[href|target|name]';
-  $init['plugins'] = 'table,emotions,iespell, print';
-  $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
-  $init['theme_advanced_buttons3_add'] = 'emotions,iespell,separator,print';
+/**
+ * Customize a TinyMCE theme.
+ *
+ * @param init
+ *   An array of settings TinyMCE should invoke a theme. You may override any
+ *   of the TinyMCE settings. Details here:
+ *
+ *    http://tinymce.moxiecode.com/wrapper.php?url=tinymce/docs/using.htm
+ *
+ * @param textarea_name
+ *   The name of the textarea TinyMCE wants to enable.
+ *
+ * @param theme_name
+ *   The default theme name to be enabled for this textarea. The sitewide
+ *   default is 'simple', but the user may also override this.
+ */
+function tinymce_theme($init, $textarea_name, $theme_name) {
+  switch ($theme_name) {
+    case 'advanced':
+      $init['extended_valid_elements'] = 'a[href|target|name]';
+      $init['plugins'] = 'table,emotions,iespell, print';
+      $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
+      $init['theme_advanced_buttons3_add'] = 'emotions,iespell,separator,print';
+      return $init;
+  }
 }
 
-The above function would add tables, emotions, spellchecking (IE only)
-and a print button to the 'advanced' theme.
+The above function would add tables, emotions, spellchecking
+(IE only) and a print button to the 'advanced' theme.  There are
+many ways this function can be used. For example you could make
+comment textareas use the 'simple' theme while node forms use
+'advanced' by inspecting the name of the textarea ($textarea_name).
 
 Note that the way you build the theme function depends on the theme
 engine you're using.
 
-See the TinyMCE manual for details:
+See the TinyMCE manual for details on the parameters that can be
+sent to TinyMCE:
 
 http://tinymce.moxiecode.com/wrapper.php?url=tinymce/docs/index.htm

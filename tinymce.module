@@ -47,6 +47,13 @@ function tinymce_perm() {
  */
 function tinymce_settings() {
   drupal_set_title(t('TinyMCE settings'));
+
+  //Check if TinyMCE is installed.
+  $tinymce_loc = drupal_get_path('module', 'tinymce') .'/tinymce/';
+  if (!is_dir($tinymce_loc)) {
+    drupal_set_message(t('Could not find the TinyMCE engine installed at <strong>%tinymce-directory</strong>. Please <a href="http://tinymce.moxiecode.com/">download TinyMCE</a>, uncompress it and copy the folder into %tinymce-path.', array('%tinymce-path' => drupal_get_path('module', 'tinymce'), '%tinymce-directory' => drupal_get_path('module', 'tinymce'). '/tinymce/')), 'error');
+  }
+
   $group = form_radios(t('Default theme'), 'tinymce_theme', variable_get('tinymce_theme', 'simple'), _tinymce_get_themes());
   $output = form_group('', $group);
 
@@ -74,7 +81,7 @@ function tinymce_textarea($op, $name) {
     $init['document_base_url'] = "$base_url/";
 
     // Merge and overrivide user-defined TinyMCE settings.
-    $init = array_merge($init, (array) theme("tinymce_$theme_name", $init));
+    $init = array_merge($init, (array) theme('tinymce_theme', $init, $textarea_name, $theme_name));
     foreach ($init as $k => $v) {
       $settings[] = $k. ' : "'. $v. '"';
     }
@@ -118,23 +125,31 @@ function tinymce_user($type, &$edit, &$user, $category = NULL) {
  */
 
 /**
- * Customize the advanced TinyMCE theme.
+ * Customize a TinyMCE theme.
  *
  * @param init
- *   An array of settings TinyMCE should invoke in the advanced theme mode. You
- *   may override any of the TinyMCE settings. Details here:
+ *   An array of settings TinyMCE should invoke a theme. You may override any
+ *   of the TinyMCE settings. Details here:
  *
  *    http://tinymce.moxiecode.com/wrapper.php?url=tinymce/docs/using.htm
+ *
+ * @param textarea_name
+ *   The name of the textarea TinyMCE wants to enable.
+ *
+ * @param theme_name
+ *   The default theme name to be enabled for this textarea. The sitewide
+ *   default is 'simple', but the user may also override this.
  */
-function theme_tinymce_advanced($init) {
-  $init['extended_valid_elements'] = 'a[href|target|name]';
-  $init['plugins'] = 'table';
-  $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
-
-  $init['plugins'] = 'table,emotions,iespell, print';
-  $init['theme_advanced_buttons3_add'] = 'emotions,iespell,separator,print';
-
-  return $init;
+function theme_tinymce_theme($init, $textarea_name, $theme_name) {
+  switch ($theme_name) {
+    case 'advanced':
+      $init['extended_valid_elements'] = 'a[href|target|name]';
+      $init['plugins'] = 'table';
+      $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
+      $init['plugins'] = 'table,emotions,iespell, print';
+      $init['theme_advanced_buttons3_add'] = 'emotions,iespell,separator,print';
+      return $init;
+  }
 }
 
 /** @} End of addtogroup themeable */
