@@ -29,7 +29,7 @@ INSTALLATION:
 
      administer > modules
 
-4. Optionally, fine tune how this module operates by navigating to:
+5. Optionally, fine tune how this module operates by navigating to:
 
      administer > settings > tinymce
 
@@ -53,11 +53,21 @@ with 3 themes:
         http://tinymce.moxiecode.com/example_advanced.php?example=true
 
 The admin can choose what theme TinyMCE should be the default and
-user's can override this by editing their account. User's also have
-the option of disabling TinyMCE completely.
+user's can override this by editing their account (if they've been
+given permissions to do so). User's also have the option of disabling
+TinyMCE completely.
 
 The admin can also define which pages TinyMCE should be used on.
 This cannot be changed on a per user basis.
+
+DRUPAL PLUGINS FOR TINYMCE:
+********************************************************************
+Located in the plugins directory are Drupal specific plugins for
+TinyMCE. Once you've downloaded and installed the TinyMCE engine,
+copy this plugins over the directory of TinyMCE
+(tinymce/jscripts/tiny_mce/). Most of these plugins will already be
+active if you use the 'advanced' theme for tinymce. See the
+documentation in each plugin folder for more details.
 
 CAVEATS
 ********************************************************************
@@ -103,6 +113,7 @@ function tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
   switch ($theme_name) {
     case 'advanced':
       $init['extended_valid_elements'] = 'a[href|target|name]';
+      // Add the names of custom plugins here.
       $init['plugins'] = 'table,emotions,iespell, print';
       $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
       $init['theme_advanced_buttons3_add'] = 'emotions,iespell,separator,print';

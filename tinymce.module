@@ -17,8 +17,11 @@
  *
  */
 function tinymce_menu($may_cache) {
+  global $base_url;
   if (!$may_cache) {
     drupal_set_html_head('<script language="javascript" type="text/javascript" src="'. drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>');
+    //We may need this so TinyMCE has the right path to Drupal to invoke drupal tinymce plugins.
+    //drupal_set_html_head('<script language="javascript" type="text/javascript"> var baseUrl = "'. $base_url .'"; </script>');
     // We have to do this becuase of some unfocused CSS in certain themes. See http://drupal.org/node/18879 for details
     drupal_set_html_head('<style type="text/css" media="all">.mceEditor img { display: inline; }</style>');
   }
@@ -45,6 +48,47 @@ function tinymce_perm() {
 }
 
 /**
+ * Implementation of hook_img_assist_head().
+ */
+function tinymce_img_assist_head() {
+  $popup_path = drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce';
+
+$output = <<<EOD
+<script language="javascript" src="$popup_path/tiny_mce_popup.js"></script>
+<script language="javascript">
+  function insertImage(form) {
+    if (window.opener) {
+      var thumb = (form['edit-thumb'].checked) ? 1 : 0;
+
+      if (thumb == 1) {
+        var src    = form['edit[thumbpath]'].value;
+        var width  = form['edit[thumbWidth]'].value;
+        var height = form['edit[thumbHeight]'].value;
+      }
+      else {
+        var src    = form['edit[filepath]'].value;
+        var width  = form['edit[width]'].value  != '' ? form['edit[width]'].value  : form['edit[origWidth]'].value;
+        var height = form['edit[height]'].value != '' ? form['edit[height]'].value : form['edit[origHeight]'].value;
+      }
+      var alt = form['edit[alt]'].value;
+
+      window.opener.tinyMCE.insertImage(src, alt, '', '', '', width, height);
+    }
+  }
+</script>
+EOD;
+
+  return $output;
+}
+
+/**
+ * Implementation of hook_img_assist_on_submit().
+ */
+function tinymce_img_assist_on_submit() {
+  return 'parent.insertImage(this.form);';
+}
+
+/**
  * Implementation of hook_settings().
  */
 function tinymce_settings() {
@@ -67,6 +111,9 @@ function tinymce_settings() {
   return $output;
 }
 
+/**
+ * Implementation of hook_textarea().
+ */
 function tinymce_textarea($op, $name) {
   static $is_running = FALSE;
   if (!user_access('access tinymce')) return NULL;
@@ -118,9 +165,6 @@ function tinymce_user($type, &$edit, &$user, $category = NULL) {
     if ($user_status && user_access('choose own tinymce theme')) {
       $form .= form_radios(t('Default theme'), 'tinymce_theme', $edit['tinymce_theme'] ? $edit['tinymce_theme'] : variable_get('tinymce_theme', 'simple'), _tinymce_get_themes());
     }
-    else {
-      $form .= form_hidden('tinymce_theme', $edit['tinymce_theme'] ? $edit['tinymce_theme'] : variable_get('tinymce_theme', 'simple'));
-    }
     return array(array('title' => t('TinyMCE settings'), 'data' => $form));
   }
   if ($type == 'validate') {
@@ -159,9 +203,8 @@ function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
   switch ($theme_name) {
     case 'advanced':
       $init['extended_valid_elements'] = 'a[href|target|name]';
-      $init['plugins'] = 'table';
       $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
-      $init['plugins'] = 'table,emotions,iespell, print';
+      $init['plugins'] = 'drupalimage,table,emotions,iespell,print';
       $init['theme_advanced_buttons3_add'] = 'emotions,iespell,separator,print';
       return $init;
   }
