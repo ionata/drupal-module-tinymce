@@ -39,7 +39,7 @@ function tinymce_help($section) {
  * Implementation of hook_perm().
  */
 function tinymce_perm() {
-  return array('use tinymce');
+  return array('access tinymce', 'choose own tinymce theme');
 }
 
 /**
@@ -55,9 +55,9 @@ function tinymce_settings() {
   }
 
   $group = form_radios(t('Default theme'), 'tinymce_theme', variable_get('tinymce_theme', 'simple'), _tinymce_get_themes());
-  $output = form_group('', $group);
+  $output = form_group(t('Themes'), $group);
 
-  $group = form_radios(t('Use TinyMCE'), 'tinymce_all', variable_get('tinymce_all', 1), array(t('on specific pages'), t('on all textareas')));
+  $group = form_radios(t('access tinymce'), 'tinymce_all', variable_get('tinymce_all', 1), array(t('on specific pages'), t('on all textareas')));
   if (!variable_get('tinymce_all', 1)) {
     $group .= form_textarea(t('Pages'), 'tinymce_pages', variable_get('tinymce_pages', tinymce_help('admin/settings/tinymce#pages')), 40, 5, t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are '<em>blog</em>' for the blog page and '<em>blog/*</em>' for every personal blog. '<em>&lt;front&gt;</em>' is the front page."));
   }
@@ -66,7 +66,8 @@ function tinymce_settings() {
 }
 
 function tinymce_textarea($op, $name) {
-  if (!user_access('use tinymce')) return NULL;
+  static $is_running = FALSE;
+  if (!user_access('access tinymce')) return NULL;
 
   global $user;
   $theme_name = $user->tinymce_theme ? $user->tinymce_theme : variable_get('tinymce_theme', 'simple');
@@ -81,7 +82,7 @@ function tinymce_textarea($op, $name) {
     $init['document_base_url'] = "$base_url/";
 
     // Merge and overrivide user-defined TinyMCE settings.
-    $init = array_merge($init, (array) theme('tinymce_theme', $init, $textarea_name, $theme_name));
+    $init = array_merge($init, (array) theme('tinymce_theme', $init, $textarea_name, $theme_name, $is_running));
     foreach ($init as $k => $v) {
       $settings[] = $k. ' : "'. $v. '"';
     }
@@ -95,7 +96,13 @@ $output = <<<EOD
 </script>
 EOD;
 
-    return $output;
+    // We only invoke TinyMCE once per request, not once per textarea. We could
+    // do this check earlier in the conditional, but it's probably wise to let
+    // the themed functions know what's going on.
+    if (!$is_running) {
+      $is_running = TRUE;
+      return $output;
+    }
   }
 }
 
@@ -103,14 +110,14 @@ EOD;
  * Implementation of hook_user().
  */
 function tinymce_user($type, &$edit, &$user, $category = NULL) {
-  if ($type == 'form' && $category == 'account' && user_access('use tinymce')) {
+  if ($type == 'form' && $category == 'account' && user_access('access tinymce')) {
     $user_status = $edit['tinymce_status'] != NULL ? $edit['tinymce_status'] : ($user->tinymce_status != NULL ? $user->tinymce_status : 1);
-    $form = form_radios(t('Use TinyMCE'), 'tinymce_status', $user_status, array(t('Disabled'), t('Enabled')));
-    if ($user_status) {
+    $form = form_radios(t('Status'), 'tinymce_status', $user_status, array(t('Disabled'), t('Enabled')), t('Would you like to enable rich-text editing of your content?'));
+    if ($user_status && user_access('choose own tinymce theme')) {
       $form .= form_radios(t('Default theme'), 'tinymce_theme', $edit['tinymce_theme'] ? $edit['tinymce_theme'] : variable_get('tinymce_theme', 'simple'), _tinymce_get_themes());
     }
     else {
-      $form .= form_hidden('tinymce_theme', $edit['tinymce_theme']);
+      $form .= form_hidden('tinymce_theme', $edit['tinymce_theme'] ? $edit['tinymce_theme'] : variable_get('tinymce_theme', 'simple'));
     }
     return array(array('title' => t('TinyMCE settings'), 'data' => $form));
   }
@@ -139,8 +146,14 @@ function tinymce_user($type, &$edit, &$user, $category = NULL) {
  * @param theme_name
  *   The default theme name to be enabled for this textarea. The sitewide
  *   default is 'simple', but the user may also override this.
+ *
+ * @param is_running
+ *   A boolean flag that identifies id TinyMCE is currently running for this
+ *   request life cycle. If it's already running then anything returned by this
+ *   will be ignored. This is necessary since TinyMCE works by being invoked
+ *   once per request and not once per textarea.
  */
-function theme_tinymce_theme($init, $textarea_name, $theme_name) {
+function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
   switch ($theme_name) {
     case 'advanced':
       $init['extended_valid_elements'] = 'a[href|target|name]';

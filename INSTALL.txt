@@ -81,8 +81,14 @@ Drupal theme file create a new function called tinymce_theme:
  * @param theme_name
  *   The default theme name to be enabled for this textarea. The sitewide
  *   default is 'simple', but the user may also override this.
+ *
+ * @param is_running
+ *   A boolean flag that identifies id TinyMCE is currently running for this
+ *   request life cycle. If it's already running then anything returned by this
+ *   will be ignored. This is necessary since TinyMCE works by being invoked
+ *   once per request and not once per textarea.
  */
-function tinymce_theme($init, $textarea_name, $theme_name) {
+function tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
   switch ($theme_name) {
     case 'advanced':
       $init['extended_valid_elements'] = 'a[href|target|name]';
