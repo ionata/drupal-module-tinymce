@@ -47,7 +47,7 @@ function tinymce_perm() {
  */
 function tinymce_settings() {
   drupal_set_title(t('TinyMCE settings'));
-  $group = form_radios(t('Default theme'), 'tinymce_theme', variable_get('tinymce_theme', 'default'), _tinymce_get_themes());
+  $group = form_radios(t('Default theme'), 'tinymce_theme', variable_get('tinymce_theme', 'simple'), _tinymce_get_themes());
   $output = form_group('', $group);
 
   $group = form_radios(t('Use TinyMCE'), 'tinymce_all', variable_get('tinymce_all', 1), array(t('on specific pages'), t('on all textareas')));
@@ -62,18 +62,28 @@ function tinymce_textarea($op, $name) {
   if (!user_access('use tinymce')) return NULL;
 
   global $user;
-  $theme_name = $user->tinymce_theme ? $user->tinymce_theme : variable_get('tinymce_theme', 'default');
+  $theme_name = $user->tinymce_theme ? $user->tinymce_theme : variable_get('tinymce_theme', 'simple');
   $user_status = $user->tinymce_status != NULL ? $user->tinymce_status : TRUE;
 
   if ($op == 'pre' && _tinymce_page_match() && $user_status) {
     global $base_url;
 
+    // Build a default list of TinyMCE settings.
+    $init['mode'] = 'textareas';
+    $init['theme'] = $theme_name;
+    $init['document_base_url'] = "$base_url/";
+
+    // Merge and overrivide user-defined TinyMCE settings.
+    $init = array_merge($init, (array) theme("tinymce_$theme_name", $init));
+    foreach ($init as $k => $v) {
+      $settings[] = $k. ' : "'. $v. '"';
+    }
+    $tinymce_settings = implode(",\n", $settings);
+
 $output = <<<EOD
 <script language="javascript" type="text/javascript">
   tinyMCE.init({
-    mode : "textareas",
-    theme : "$theme_name",
-    document_base_url : "$base_url/"
+    $tinymce_settings
   });
 </script>
 EOD;
@@ -87,9 +97,10 @@ EOD;
  */
 function tinymce_user($type, &$edit, &$user, $category = NULL) {
   if ($type == 'form' && $category == 'account' && user_access('use tinymce')) {
-    $form = form_radios(t('Use TinyMCE'), 'tinymce_status', $edit['tinymce_status'], array(t('Disabled'), t('Enabled')));
-    if ($edit['tinymce_status']) {
-      $form .= form_radios(t('Default theme'), 'tinymce_theme', $edit['tinymce_theme'] ? $edit['tinymce_theme'] : variable_get('tinymce_theme', 'default'), _tinymce_get_themes());
+    $user_status = $edit['tinymce_status'] != NULL ? $edit['tinymce_status'] : ($user->tinymce_status != NULL ? $user->tinymce_status : 1);
+    $form = form_radios(t('Use TinyMCE'), 'tinymce_status', $user_status, array(t('Disabled'), t('Enabled')));
+    if ($user_status) {
+      $form .= form_radios(t('Default theme'), 'tinymce_theme', $edit['tinymce_theme'] ? $edit['tinymce_theme'] : variable_get('tinymce_theme', 'simple'), _tinymce_get_themes());
     }
     else {
       $form .= form_hidden('tinymce_theme', $edit['tinymce_theme']);
@@ -97,10 +108,36 @@ function tinymce_user($type, &$edit, &$user, $category = NULL) {
     return array(array('title' => t('TinyMCE settings'), 'data' => $form));
   }
   if ($type == 'validate') {
-    // validate user data editing
     return array('tinymce_theme' => $edit['tinymce_theme'], 'tinymce_status' => $edit['tinymce_status']);
   }
 }
+
+/**
+ * @addtogroup themeable
+ * @{
+ */
+
+/**
+ * Customize the advanced TinyMCE theme.
+ *
+ * @param init
+ *   An array of settings TinyMCE should invoke in the advanced theme mode. You
+ *   may override any of the TinyMCE settings. Details here:
+ *
+ *    http://tinymce.moxiecode.com/wrapper.php?url=tinymce/docs/using.htm
+ */
+function theme_tinymce_advanced($init) {
+  $init['extended_valid_elements'] = 'a[href|target|name]';
+  $init['plugins'] = 'table';
+  $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
+
+  $init['plugins'] = 'table,emotions,iespell, print';
+  $init['theme_advanced_buttons3_add'] = 'emotions,iespell,separator,print';
+
+  return $init;
+}
+
+/** @} End of addtogroup themeable */
 
 /**
  * Grab the themes available to TinyMCE.

@@ -34,3 +34,52 @@ INSTALLATION:
      administer > settings > tinymce
 
 Create new content and see TinyMCE in action!
+
+README:
+********************************************************************
+Once TinyMCE is enabled, the default behavior is that all textareas
+will use TinyMCE for all users. The admin can change these defaults
+at
+
+  administer > settings > tinymce
+
+For example, the default theme TinyMCE will use is called 'simple'.
+Themes control the functionality TinyMCE makes visible. It comes
+with 3 themes:
+
+  1) Simple - basic formatting
+  2) Default - basic formatting with tables
+  3) Advanced - many many features. See a demo at
+        http://tinymce.moxiecode.com/example_advanced.php?example=true
+
+The admin can choose what theme TinyMCE should be the default and
+user's can override this by editing their account. User's also have
+the option of disabling TinyMCE completely.
+
+The admin can also define which pages TinyMCE should be used on.
+This cannot be changed on a per user basis.
+
+Tweaking a theme
+-----------------
+
+Developers have complete control over the arguments which invoke a
+TinyMCE theme by creating a custom Drupal theme function.  For
+example, say you want change the way the 'advanced' theme behaves.
+In your Drupal theme file create a new function as follows:
+
+function tinymce_advanced($init) {
+  $init['extended_valid_elements'] = 'a[href|target|name]';
+  $init['plugins'] = 'table,emotions,iespell, print';
+  $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
+  $init['theme_advanced_buttons3_add'] = 'emotions,iespell,separator,print';
+}
+
+The above function would add tables, emotions, spellchecking (IE only)
+and a print button to the 'advanced' theme.
+
+Note that the way you build the theme function depends on the theme
+engine you're using.
+
+See the TinyMCE manual for details:
+
+http://tinymce.moxiecode.com/wrapper.php?url=tinymce/docs/index.htm
