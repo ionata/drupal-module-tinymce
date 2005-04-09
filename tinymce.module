@@ -157,8 +157,8 @@ $tinymce_invoke = <<<EOD
 </script>
 EOD;
 
-$link_text = variable_get('tinymce_default_state', 0) == 1 ? t('disable rich-text') : t('enable rich-text');
-$link_text = $user->tinymce_status == 1 ? t('disable rich-text') : t('enable rich-text');
+$status = isset($user->tinymce_status) ? $user->tinymce_status : variable_get('tinymce_default_state', 0);
+$link_text = $status == 1 ? t('disable rich-text') : t('enable rich-text');
 $disable = t('Your current web browser does not support WYSIWYG editing.');
 $wysiwyg_link = <<<EOD
 <script language="javascript" type="text/javascript">
@@ -358,7 +358,8 @@ function tinymce_config($profile) {
 
   // Is tinymce on by default?
   $init['mode'] = variable_get('tinymce_default_state', 0) == 1 ? 'textareas' : 'none';
-  $init['mode'] = $user->tinymce_status == 1 ? 'textareas' : 'none';
+  $status = isset($user->tinymce_status) ? $user->tinymce_status : variable_get('tinymce_default_state', 0);
+  $init['mode'] = $status == 1 ? 'textareas' : 'none';
   $init['theme'] = $settings['theme'] ? $settings['theme'] : 'simple';
   $init['document_base_url'] = "$base_url/";
 
