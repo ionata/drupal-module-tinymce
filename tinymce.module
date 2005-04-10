@@ -403,7 +403,6 @@ function tinymce_profile_delete($name) {
  */
 function tinymce_profile_form($edit) {
   $edit = array2object($edit);
-  dprint_r($edit);
 
   // Only display the roles that currently don't have a tinymce profile. One
   // profile per role.
@@ -507,7 +506,7 @@ function tinymce_profile_overview() {
     $output .= t('<p>No profiles found.</p>');
   }
 
-  $group = form_radios(t('Default tinymce state'), 'tinymce_default_state', variable_get('tinymce_default_state', 0), array(t('Off'), t('On')), t('Should tinymce be enabled or disabled by default when it\'s first loaded from a textarea?'));
+  $group = form_radios(t('Default tinymce state'), 'tinymce_default_state', variable_get('tinymce_default_state', 0), array(t('Off'), t('On')), t('Should tinymce be enabled or disabled by default when it\'s first loaded from a textarea? Note: The user may override this setting in their profile.'));
   $output .= form_group(t('Default settings'), $group);
   $output .= form_submit(t('Save settings'));
 
