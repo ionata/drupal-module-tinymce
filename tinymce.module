@@ -571,7 +571,7 @@ function _tinymce_page_match($edit) {
     }
   }
 
-  if ($edit['settings']['access'] == 1) {
+  if ($edit->settings['access'] == 1) {
     return TRUE;
   }
   else {
