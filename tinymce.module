@@ -20,17 +20,24 @@ function tinymce_menu($may_cache) {
     $enable  = t('enable rich-text');
     $disable = t('disable rich-text');
 
+    if (function_exists('img_assist_help')) {
+      $img_assist_on = 'img_assist.href = "'. $base_url .'/'. url('img_assist/add&editor=tinymce') . '";';
+      $img_assist_off = 'img_assist.href = "'. $base_url .'/'. url('img_assist/add') . '";';
+    }
+
 $js_extra = <<<EOD
 <script language="javascript" type="text/javascript">
   function mceToggle(id, linkid) {
     element = document.getElementById(id);
     link = document.getElementById(linkid);
+    img_assist = document.getElementById('img_assist-link');
 
     if (tinyMCE.getEditorId(element.name) == null) {
       tinyMCE.addMCEControl(element, element.name);
       element.togg = 'on';
       link.innerHTML = '$disable';
       link.href = "javascript:mceToggle('" +id+ "', '" +linkid+ "');";
+      $img_assist_on
       link.blur();
     }
     else {
@@ -38,6 +45,7 @@ $js_extra = <<<EOD
       element.togg = 'off';
       link.innerHTML = '$enable';
       link.href = "javascript:mceToggle('" +id+ "', '" +linkid+ "');";
+      $img_assist_off
       link.blur();
     }
   }
@@ -103,6 +111,18 @@ $output = <<<EOD
       }
       var alt = form['edit[alt]'].value;
 
+      /*
+      var result = "<ul>";
+      for (var i in window.opener)
+        result += "<li>obj." + i + " = " + window.opener[i] + '</li>\\n';
+      result += "</ul>";
+      document.write(result);
+      */
+
+      // This next line allows IE to find the tinymce instance if the user
+      // didn't click inside the textarea before spawning img_assist. Otherwise
+      // the user will click 'insert image' and nothing will happen.
+      window.opener.tinyMCE.selectedInstance.contentWindow.focus();
       window.opener.tinyMCE.insertImage(src, alt, '', '', '', width, height);
     }
   }
@@ -149,6 +169,16 @@ function tinymce_textarea($op, $textarea_name) {
     }
     $tinymce_settings = implode(",\n    ", $settings);
 
+    if (function_exists('img_assist_help')) {
+      global $base_url;
+      if ($init['mode'] == 'textareas') {
+        $img_assist_state = 'img_assist.href = "'. $base_url .'/'. url('img_assist/add&editor=tinymce') . '";';
+      }
+      else {
+        $img_assist_state = 'img_assist.href = "'. $base_url .'/'. url('img_assist/add') . '";';
+      }
+    }
+
 $tinymce_invoke = <<<EOD
 <script language="javascript" type="text/javascript">
   tinyMCE.init({
@@ -162,6 +192,8 @@ $link_text = $status == 1 ? t('disable rich-text') : t('enable rich-text');
 $disable = t('Your current web browser does not support WYSIWYG editing.');
 $wysiwyg_link = <<<EOD
 <script language="javascript" type="text/javascript">
+  img_assist = document.getElementById('img_assist-link');
+  $img_assist_state
   if (typeof(document.execCommand) == 'undefined') {
     document.write('<div style="font-size:x-small">$disable</div>');
   }
@@ -368,10 +400,12 @@ function tinymce_config($profile) {
   $init['preformatted'] = $settings['preformatted'] ? $settings['preformatted'] : 'false';
   $init['force_br_newlines'] = $settings['force_br'] ? $settings['force_br'] : 'false';
   $init['force_p_newlines'] = $settings['force_p'] ? $settings['force_p'] : 'false';
-  $init['theme_advanced_toolbar_location'] = $settings['toolbar_loc'] ? $settings['toolbar_loc'] : 'bottom';
-  $init['theme_advanced_toolbar_align'] = $settings['toolbar_align'] ? $settings['toolbar_align'] : 'left';
-  $init['theme_advanced_path_location'] = $settings['path_loc'] ? $settings['path_loc'] : 'none';
-  $init['theme_advanced_blockformats'] = $settings['block_formats'] ? $settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6';
+  if ($init['theme'] == 'advanced') {
+    $init['theme_advanced_toolbar_location'] = $settings['toolbar_loc'] ? $settings['toolbar_loc'] : 'bottom';
+    $init['theme_advanced_toolbar_align'] = $settings['toolbar_align'] ? $settings['toolbar_align'] : 'left';
+    $init['theme_advanced_path_location'] = $settings['path_loc'] ? $settings['path_loc'] : 'none';
+    $init['theme_advanced_blockformats'] = $settings['block_formats'] ? $settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6';
+  }
 
   if ($edit['css_classes']) $init['theme_advanced_styles'] = $settings['css_classes'];
   if ($settings['width']) $init['width'] = $settings['width'];
@@ -479,10 +513,12 @@ function tinymce_profile_load($name = '') {
         $role[$r->rid] = $roles[$r->rid];
       }
       $data->rids = $role;
+
       $profiles[$data->name] = $data;
     }
   }
-  return $name ? $profiles[$name] : $profiles;
+
+  return ($name ? $profiles[$name] : $profiles);
 }
 
 /**
