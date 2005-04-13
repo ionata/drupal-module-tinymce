@@ -90,40 +90,33 @@ function tinymce_perm() {
  */
 function tinymce_img_assist_head() {
   global $base_url;
-  $popup_path = $base_url . drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce/tiny_mce_popup.js';
+  $popup_path = $base_url .'/'. drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce/tiny_mce_popup.js';
+  $img_assist_prop = $base_url .'/'. drupal_get_path('module', 'img_assist'). '/properties.js';
+  $clean_url    = variable_get('clean_url', 0);
+  $img_template = variable_get('img_assist_img_html', img_assist_help('img_assist/template'));
+  $img_template = str_replace("\r\n", "\n", $img_template);
+  $img_template = str_replace("\n", '\n', addslashes($img_template));
 
 $output = <<<EOD
 <script language="javascript" src="$popup_path"></script>
+<script language="javascript" src="$img_assist_prop"></script>
 <script language="javascript">
+  var clean_url    = $clean_url;
+  var img_template = "$img_template";
+
   function insertImage(form) {
     if (window.opener) {
-      var thumb = (form['edit-thumb'].checked) ? 1 : 0;
+      form['edit[thumbpath]'].value = window.opener.tinyMCE.convertURL(form['edit[thumbpath]'].value);
+      form['edit[filepath]'].value = window.opener.tinyMCE.convertURL(form['edit[filepath]'].value);
+      form['edit[nodePath]'].value = window.opener.tinyMCE.convertURL(form['edit[nodePath]'].value);
 
-      if (thumb == 1) {
-        var src    = form['edit[thumbpath]'].value;
-        var width  = form['edit[thumbWidth]'].value;
-        var height = form['edit[thumbHeight]'].value;
-      }
-      else {
-        var src    = form['edit[filepath]'].value;
-        var width  = form['edit[width]'].value  != '' ? form['edit[width]'].value  : form['edit[origWidth]'].value;
-        var height = form['edit[height]'].value != '' ? form['edit[height]'].value : form['edit[origHeight]'].value;
-      }
-      var alt = form['edit[alt]'].value;
-
-      /*
-      var result = "<ul>";
-      for (var i in window.opener)
-        result += "<li>obj." + i + " = " + window.opener[i] + '</li>\\n';
-      result += "</ul>";
-      document.write(result);
-      */
+      var img = generate_image_tag(form, 'html');
 
       // This next line allows IE to find the tinymce instance if the user
       // didn't click inside the textarea before spawning img_assist. Otherwise
       // the user will click 'insert image' and nothing will happen.
       window.opener.tinyMCE.selectedInstance.contentWindow.focus();
-      window.opener.tinyMCE.insertImage(src, alt, '', '', '', width, height);
+      window.opener.tinyMCE.execCommand('mceInsertContent', false, img);
     }
   }
 </script>

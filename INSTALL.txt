@@ -77,6 +77,10 @@ This cannot be changed on a per user basis.
 
 DRUPAL PLUGINS FOR TINYMCE:
 ********************************************************************
+NOTE: If you want to use img_assist with TinyMCE, you don't have to
+      install a plugin. Just enable the img_assist module and click
+      the photo icon that appears below each textarea.
+
 Located in the plugins directory are Drupal specific plugins for
 TinyMCE. Once you've downloaded and installed the TinyMCE engine,
 copy this plugins over the directory of TinyMCE
