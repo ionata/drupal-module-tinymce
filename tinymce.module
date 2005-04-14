@@ -90,6 +90,7 @@ function tinymce_perm() {
  */
 function tinymce_img_assist_head() {
   global $base_url;
+  // The tinymce docs say to include tiny_mce_popup.js, but this was killing IE!
   $popup_path = $base_url .'/'. drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce/tiny_mce_popup.js';
   $img_assist_prop = $base_url .'/'. drupal_get_path('module', 'img_assist'). '/properties.js';
   $clean_url    = variable_get('clean_url', 0);
@@ -98,7 +99,6 @@ function tinymce_img_assist_head() {
   $img_template = str_replace("\n", '\n', addslashes($img_template));
 
 $output = <<<EOD
-<script language="javascript" src="$popup_path"></script>
 <script language="javascript" src="$img_assist_prop"></script>
 <script language="javascript">
   var clean_url    = $clean_url;
