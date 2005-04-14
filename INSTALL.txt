@@ -17,19 +17,21 @@ INSTALLATION:
 1. Place the entire tinymce directory into your Drupal modules/
    directory.
 
-2. Download TinyMCE 1.43 from:
+2. Download the latest CVS version of TinyMCE as TinyMCE 1.43 will not work.
 
-     http://tinymce.moxiecode.com/download.php
-
-   Uncompress the file and make sure it's named 'tinymce'.
-
-   Note: The TinyMCE 1.43 has a few bugs, for instance an error when clicking
-   a textarea in Firefox. Using the latest CVS version solved this for me,
-   but might be broken in otherways when you try it:
+   If you're comfortable using the CVS tool, instructions for checking
+   out the repository are here:
 
      http://sourceforge.net/cvs/?group_id=103281
 
-3. Place the entire tinymce folder inside your modules/tinymce directory.
+   Otherwise, you may downlad the CVS version here:
+
+     http://asitis.org/tinymce_cvs.zip
+
+   Remember to uncompress the file and make sure the folder is named
+   'tinymce'.
+
+3. Place the entire 'tinymce' folder inside your modules/tinymce directory.
 
 4. Load the database definition file (tinymce.mysql) using the
    tool of your choice (e.g. phpmyadmin). For mysql and command line
