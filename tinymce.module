@@ -313,7 +313,7 @@ function _tinymce_get_themes() {
  * Return an array where key is plugins name and value is display text for listing.
  * Sniffs out readme.txt files.
  */
- 
+
 function _tinymce_get_plugins() {
   static $plugins = array();
 
@@ -353,7 +353,7 @@ function _tinymce_get_buttons($js) {
   $buttons = array();
   // generally, the buttons are defined by switch() cases as part of the _getControlHTML function
   if ($script = file_get_contents($js)) {
-    // search for the function 
+    // search for the function
     $regex = "/.unction.*?_getControlHTML[\w\W]*?(?=function)/";
     preg_match($regex, $script, $matches);
     unset($function);
@@ -377,7 +377,7 @@ function _tinymce_get_buttons($js) {
     if ($function && !$buttons) {
       //one more method... just for extra insanity
       $regex = '/if.*?\(control.*?==\s*?[\'"](.*?)[\'"]/';
-      preg_match_all($regex, $function, $matches);      
+      preg_match_all($regex, $function, $matches);
       $buttons = $matches[1];
     }
   }
@@ -485,7 +485,7 @@ function tinymce_config($profile) {
   if ($settings['height']) $init['height'] =  $settings['height'];
 
   if ($settings['css_setting'] == 'theme') {
-    $css = drupal_get_path('theme', init_theme()) . '/style.css';
+    $css = $base_url .'/'. drupal_get_path('theme', init_theme()) . '/style.css';
     if (file_exists($css)) {
       $init['content_css'] = $css;
     }
@@ -562,7 +562,7 @@ function tinymce_profile_form($edit) {
         $subgroup .= _tinymce_checkbox($button . ' button', 'settings][buttons][', $button, in_array($button, $edit->settings['buttons'] ? $edit->settings['buttons'] : array()) ? true : false);
       }
       $subgroup .= '</div>';
-    } 
+    }
   }
   $subgroup .= '</div><br />';
   $group .= form_group(t('TinyMCE Plugins'), $subgroup, t('Activate TinyMCE plugins and buttons. Each plugin can define buttons. In order to display these buttons in the editor, you need to activate both the plugin and its associated buttons. Silly, I know, but that\'s how they do it.'));
@@ -728,6 +728,6 @@ function _tinymce_checkbox($title, $name, $value = 1, $checked = FALSE, $descrip
   // a form_hidden() which will be overwritten for a checked box.
   // we're handling the form_hidden ourselves... thank you very much
   return theme('form_element', NULL, $element, $description, $name, $required, _form_get_error($name));
-} 
+}
 
 ?>
