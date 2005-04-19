@@ -272,9 +272,9 @@ function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
   switch ($theme_name) {
     case 'advanced':
       $init['extended_valid_elements'] = 'a[href|target|name|title|onclick]';
-      $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
-      $init['plugins'] = file_exists(drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce/plugins/drupalimage') ? 'drupalimage,table,emotions,print' : 'table,emotions,print';
-      $init['theme_advanced_buttons3_add'] = 'drupalimage,emotions,separator,print';
+      /*$init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';*/
+      /*$init['plugins'] = file_exists(drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce/plugins/drupalimage') ? 'drupalimage,table,emotions,print' : 'table,emotions,print';*/
+      /*$init['theme_advanced_buttons3_add'] = 'drupalimage,emotions,separator,print';*/
       return $init;
   }
 }
@@ -307,6 +307,81 @@ function _tinymce_get_themes() {
   }
 
   return $themes;
+}
+
+/**
+ * Return an array where key is plugins name and value is display text for listing.
+ * Sniffs out readme.txt files.
+ */
+ 
+function _tinymce_get_plugins() {
+  static $plugins = array();
+
+  if (!$plugins) {
+    $plug_loc = drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/plugins/';
+    if (is_dir($plug_loc) && $dh = opendir($plug_loc)) {
+      while (($file = readdir($dh)) !== false) {
+        if (!in_array($file, array('.', '..', 'CVS')) && is_dir($plug_loc . $file)) {
+          $readme = '';
+          foreach (array('readme.txt','ReadMe.txt','README.txt', 'Readme.txt', 'README.TXT') as $readme_name) {
+            if (file_exists($plug_loc.$file.'/'.$readme_name)) {
+              $readme = $plug_loc.$file.'/'.$readme_name;
+              break;
+            }
+          }
+          //print $file.":";
+          //$buttons = _tinymce_get_buttons($plug_loc.$file.'/editor_plugin.js');
+          $plugins[$file]  = $file." plugin";
+          $plugins[$file] .= $readme ? ' | <a href="'.$readme.'" onClick = "window.open(\''.$readme.'\',\'readme\',\'scrollbars,resizable,width=600,height=400\'); return false;">readme</a>' : '';
+        }
+      }
+      closedir($dh);
+      asort($plugins);
+    }
+  }
+  return $plugins;
+}
+
+
+/**
+ * Parse a JavaScript file and attempt to find definitions of the _getControlHTML function.
+ * return them as an array
+ * This is far from adequate, but until TinyMCE has a standardized way of getting buttons, it'll have to do.
+ */
+
+function _tinymce_get_buttons($js) {
+  $buttons = array();
+  // generally, the buttons are defined by switch() cases as part of the _getControlHTML function
+  if ($script = file_get_contents($js)) {
+    // search for the function 
+    $regex = "/.unction.*?_getControlHTML[\w\W]*?(?=function)/";
+    preg_match($regex, $script, $matches);
+    unset($function);
+    $function = $matches[0];
+    // find 'case "foo"' within it, and remember "foo"
+    $regex = '/case.*?"(.*?)"/';
+    preg_match_all($regex, $function, $matches);
+    unset($buttons);
+    $buttons = $matches[1];
+    if ($function && !$buttons) {
+      // unfortunately some modules don't use cases...
+      // they use an array system...
+      $regex = '/^.*?ontrol.*?rray.*?\(([\w\W]*?)(?=\)[\s]*?;)/';
+      preg_match($regex, $function, $matches);
+      $array = $matches[1];
+      //var_dump($array);
+      $regex = '/\[[\'"](.*?)(?=[\'"].*?][,\)])/';
+      preg_match_all($regex, $array, $matches);
+      $buttons = $matches[1];
+    }
+    if ($function && !$buttons) {
+      //one more method... just for extra insanity
+      $regex = '/if.*?\(control.*?==\s*?[\'"](.*?)[\'"]/';
+      preg_match_all($regex, $function, $matches);      
+      $buttons = $matches[1];
+    }
+  }
+  return $buttons;
 }
 
 /********************************************************************
@@ -401,6 +476,8 @@ function tinymce_config($profile) {
     $init['theme_advanced_toolbar_align'] = $settings['toolbar_align'] ? $settings['toolbar_align'] : 'left';
     $init['theme_advanced_path_location'] = $settings['path_loc'] ? $settings['path_loc'] : 'none';
     $init['theme_advanced_blockformats'] = $settings['block_formats'] ? $settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6';
+    $init['plugins'] = $settings['plugins'] ? implode(',', $settings['plugins']) : '';
+    $init['theme_advanced_buttons3_add'] = $settings['buttons'] ? implode(',', $settings['buttons']) : '';
   }
 
   if ($edit['css_classes']) $init['theme_advanced_styles'] = $settings['css_classes'];
@@ -419,6 +496,7 @@ function tinymce_config($profile) {
 
   return $init;
 }
+
 
 /**
  * Remove a profile from the database.
@@ -470,6 +548,24 @@ function tinymce_profile_form($edit) {
   $group .= form_select(t('Toolbar location'), 'settings][toolbar_loc', $edit->settings['toolbar_loc'], array('bottom' => 'bottom', 'top' => 'top'), t('Show toolbar at the top or bottom of the editor area?'));
   $group .= form_select(t('Toolbar alignment'), 'settings][toolbar_align', $edit->settings['toolbar_align'], array('center' => 'center', 'left' => 'left', 'right' => 'right'), t('Align tool icons left, center, or right within the toolbar.'));
   $group .= form_select(t('Path location'), 'settings][path_loc', $edit->settings['path_loc'], array('none' => 'none', 'top' => 'top', 'bottom' => 'bottom'), t('Path to html elements (i.e. "body>table>tr>td"). Show at top, bottom, or not at all.'));
+  $subgroup = '<div style="height:200px; overflow:auto;">';
+  //$subgroup .= form_checkboxes('', 'settings][plugins', $edit->settings['plugins'] ? $edit->settings['plugins'] : array(''), _tinymce_get_plugins());
+  $subgroup .= form_hidden('settings][plugins', 0);
+  $subgroup .= form_hidden('settings][buttons', 0);
+  $plug_loc = drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/plugins/';
+  foreach(_tinymce_get_plugins() as $plugin => $text) {
+    //print $plugin.":".$text."<br />";
+    $subgroup .= _tinymce_checkbox($text, 'settings][plugins][', $plugin, in_array($plugin, $edit->settings['plugins'] ? $edit->settings['plugins'] : array()) ? true : false);
+    if ($buttons = _tinymce_get_buttons($plug_loc.$plugin.'/editor_plugin.js')){
+      $subgroup .= '<div style="margin-left:5em">';
+      foreach ($buttons as $button) {
+        $subgroup .= _tinymce_checkbox($button . ' button', 'settings][buttons][', $button, in_array($button, $edit->settings['buttons'] ? $edit->settings['buttons'] : array()) ? true : false);
+      }
+      $subgroup .= '</div>';
+    } 
+  }
+  $subgroup .= '</div><br />';
+  $group .= form_group(t('TinyMCE Plugins'), $subgroup, t('Activate TinyMCE plugins and buttons. Each plugin can define buttons. In order to display these buttons in the editor, you need to activate both the plugin and its associated buttons. Silly, I know, but that\'s how they do it.'));
   $output .= form_group(t('Editor display'), $group);
 
   $group = form_select(t('Auto cleanup Word'), 'settings][msword', $edit->settings['msword'], array('true' => 'true', 'false' => 'false'), t('Automatically cleanup MS Office/Word HTML will be executed automatically on paste operations. (Only works in Internet Explorer)'));
@@ -617,4 +713,21 @@ function _tinymce_page_match($edit) {
     return $page_match;
   }
 }
+
+/**
+ * A kludge to render checkboxes for our interlaced buttons and plugins.
+ * A slight modification to the drupal form_checkbox function
+ */
+
+function _tinymce_checkbox($title, $name, $value = 1, $checked = FALSE, $description = NULL, $attributes = NULL, $required = FALSE) {
+  $element = '<input type="checkbox" class="'. _form_get_class('form-checkbox', $required, _form_get_error($name)) .'" name="edit['. $name .']" id="edit-'. $name .'" value="'. $value .'"'. ($checked ? ' checked="checked"' : '') . drupal_attributes($attributes) .' />';
+  if (!is_null($title)) {
+    $element = '<label class="option">'. $element .' '. $title .'</label>';
+  }
+  // Note: because unchecked boxes are not included in the POST data, we include
+  // a form_hidden() which will be overwritten for a checked box.
+  // we're handling the form_hidden ourselves... thank you very much
+  return theme('form_element', NULL, $element, $description, $name, $required, _form_get_error($name));
+} 
+
 ?>
