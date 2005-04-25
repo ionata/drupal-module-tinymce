@@ -177,6 +177,7 @@ $wysiwyg_link = <<<EOD
   }
   if (typeof(document.execCommand) == 'undefined') {
     document.write('<div style="font-size:x-small">$no_wysiwyg</div>');
+    img_assist.href = "$img_assist_off";
   }
   else {
     document.write("<div><a href=\"javascript:mceToggle('edit-$textarea_name', 'wysiwyg4$textarea_name');\" id=\"wysiwyg4$textarea_name\">$link_text</div></a>");
