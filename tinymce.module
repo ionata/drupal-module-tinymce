@@ -526,19 +526,37 @@ function tinymce_profile_form($edit) {
 
   $group = form_textfield(t('Profile name'), 'name', $edit->name, 40, 128, t('Enter an unique name for this profile. This name is only visible in the tinymce administration page.'), NULL, TRUE);
   $group .= form_checkboxes(t('Roles allowed to use this profile'), 'rids', array_keys((array) $edit->rids), $roles, t('Select at least one role.'), NULL, TRUE);
-  $group .= form_radios(t('Theme'), 'settings][theme', $edit->settings['theme'] ? $edit->settings['theme'] : 'simple', _tinymce_get_themes(), t('Select the tinymce theme.'));
+  $group .= form_radios(t('Theme'), 'settings][theme', $edit->settings['theme'] ? $edit->settings['theme'] : 'simple',  _tinymce_get_themes(), t('Select the tinymce theme.<br />Select the <em>advanced</em> theme to display advanced options below.'), FALSE ,array('onclick'=>'themeSelect(this.value);'));
   $group .= form_radios(t('Make tinymce visible on'), 'settings][access', $edit->settings['access'], array(t('specific pages'), t('all textareas')));
   $group .= form_textarea(t('Specific pages'), 'settings][access_pages', $edit->settings['access_pages'] ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages'), 40, 5, t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are '<em>blog</em>' for the blog page and '<em>blog/*</em>' for every personal blog. '<em>&lt;front&gt;</em>' is the front page."));
   $output .= form_group(t('Basic setup'), $group);
 
-  $output .= t('<h3>Advanced options</h3>');
+  $output .= t('<h3>Options</h3>');
 
   $group = form_textfield(t('Editor width'), 'settings][width', $edit->settings['width'], 3, 5, t('Set width of editor. Leave blank to use size of textarea being replaced.'));
   $group .= form_textfield(t('Editor height'), 'settings][height', $edit->settings['height'], 3, 5, t('Set height of editor. Leave blank to use size of textarea being replaced.'));
+  $output .= form_group(t('Editor display'), $group);
+
+  $group = form_select(t('Auto cleanup Word'), 'settings][msword', $edit->settings['msword'], array('true' => 'true', 'false' => 'false'), t('Automatically cleanup MS Office/Word HTML will be executed automatically on paste operations. (Only works in Internet Explorer)'));
+  $group .= form_select(t('Verify HTML'), 'settings][verify_html', $edit->settings['verify_html'], array('true' => 'true', 'false' => 'false'), t('Should the HTML contents be verified or not? Verifying will strip &lt;head&gt tags, so choose false if you will be editing full page HTML.'));
+  $group .= form_select(t('Preformatted'), 'settings][preformatted', $edit->settings['preformatted'], array('false' => 'false', 'true' => 'true'), t('If this option is set to true, the editor will insert TAB characters on tab and preserve other whitespace characters just like a PRE HTML element does.'));
+  $output .= form_group(t('On save'), $group);
+
+  $group = form_select(t('Editor CSS'), 'settings][css_setting', $edit->settings['css_setting'] ? $edit->settings['css_setting'] : 'theme', array('theme' => 'use theme css', 'self' => 'define css', 'none' => 'tinyMCE default'), t('Defines the CSS to be used in the editor area.<br />use theme css - get css from current Drupal theme.<br/>define css - enter path for css file below.<br />tinyMCE default - uses default CSS from editor.'));
+  $group .= form_textfield(t('CSS path'), 'settings][css_path', $edit->settings['css_path'], 40, 255, t('Enter path to CSS file (example: "/css/editor.css"). Select "define css" above.'));
+  $group .= form_textfield(t('CSS classes'), 'settings][css_classes', $edit->settings['css_classes'], 40, 255, t('Adds CSS classes to the "styles" droplist. Format is "&lt;title&gt;=&lt;class&gt;;"<br/> Example: "Header 1=header1;Header 2=header2;Header 3=header3;"<br />Leave blank to automatically import list of CSS classes from style sheet.'));
+  $output .= form_group(t('CSS'), $group);
+
+  $group .= form_select(t('Force BR new lines'), 'settings][force_br', $edit->settings['force_br'] ? $edit->settings['force_br'] : 'false', array('true' => 'true', 'false' => 'false'), t('Use BR tags for new lines rather than P.'));
+  $group .= form_select(t('Force P new lines'), 'settings][force_p', $edit->settings['force_p'] ? $edit->settings['force_p'] : 'true', array('true' => 'true', 'false' => 'false'), t('When enabled, Mozilla/Firefox will generate P elements on Enter/Return key and BR elements on Shift+Enter/Return..'));
+  $output .= form_group(t('Formatting'), $group);
+  
+  $group = '';
   $group .= form_select(t('Toolbar location'), 'settings][toolbar_loc', $edit->settings['toolbar_loc'], array('bottom' => 'bottom', 'top' => 'top'), t('Show toolbar at the top or bottom of the editor area?'));
   $group .= form_select(t('Toolbar alignment'), 'settings][toolbar_align', $edit->settings['toolbar_align'], array('center' => 'center', 'left' => 'left', 'right' => 'right'), t('Align tool icons left, center, or right within the toolbar.'));
   $group .= form_select(t('Path location'), 'settings][path_loc', $edit->settings['path_loc'], array('none' => 'none', 'top' => 'top', 'bottom' => 'bottom'), t('Path to html elements (i.e. "body>table>tr>td"). Show at top, bottom, or not at all.'));
-  $subgroup = '<div style="height:200px; overflow:auto;">';
+  $group .= form_textfield(t('Block formats'), 'settings][block_formats', $edit->settings['block_formats'] ? $edit->settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6', 40, 250, t('Comma separated list of HTML block formats. You can only remove elements, not add.'));
+  $subgroup = '<div style="height:200px; overflow:auto; border: 1px solid #DDD">';
   //$subgroup .= form_checkboxes('', 'settings][plugins', $edit->settings['plugins'] ? $edit->settings['plugins'] : array(''), _tinymce_get_plugins());
   $subgroup .= form_hidden('settings][plugins', 0);
   $subgroup .= form_hidden('settings][buttons', 0);
@@ -556,26 +574,23 @@ function tinymce_profile_form($edit) {
   }
   $subgroup .= '</div><br />';
   $group .= form_group(t('TinyMCE Plugins'), $subgroup, t('Activate TinyMCE plugins and buttons. Each plugin can define buttons. In order to display these buttons in the editor, you need to activate both the plugin and its associated buttons. Silly, I know, but that\'s how they do it.'));
-  $output .= form_group(t('Editor display'), $group);
-
-  $group = form_select(t('Auto cleanup Word'), 'settings][msword', $edit->settings['msword'], array('true' => 'true', 'false' => 'false'), t('Automatically cleanup MS Office/Word HTML will be executed automatically on paste operations. (Only works in Internet Explorer)'));
-  $group .= form_select(t('Verify HTML'), 'settings][verify_html', $edit->settings['verify_html'], array('true' => 'true', 'false' => 'false'), t('Should the HTML contents be verified or not? Verifying will strip &lt;head&gt tags, so choose false if you will be editing full page HTML.'));
-  $group .= form_select(t('Preformatted'), 'settings][preformatted', $edit->settings['preformatted'], array('false' => 'false', 'true' => 'true'), t('If this option is set to true, the editor will insert TAB characters on tab and preserve other whitespace characters just like a PRE HTML element does.'));
-  $output .= form_group(t('On save'), $group);
-
-  $group = form_select(t('Editor CSS'), 'settings][css_setting', $edit->settings['css_setting'] ? $edit->settings['css_setting'] : 'theme', array('theme' => 'use theme css', 'self' => 'define css', 'none' => 'tinyMCE default'), t('Defines the CSS to be used in the editor area.<br />use theme css - get css from current Drupal theme.<br/>define css - enter path for css file below.<br />tinyMCE default - uses default CSS from editor.'));
-  $group .= form_textfield(t('CSS path'), 'settings][css_path', $edit->settings['css_path'], 40, 255, t('Enter path to CSS file (example: "/css/editor.css"). Select "define css" above.'));
-  $group .= form_textfield(t('CSS classes'), 'settings][css_classes', $edit->settings['css_classes'], 40, 255, t('Adds CSS classes to the "styles" droplist. Format is "&lt;title&gt;=&lt;class&gt;;"<br/> Example: "Header 1=header1;Header 2=header2;Header 3=header3;"<br />Leave blank to automatically import list of CSS classes from style sheet.'));
-  $output .= form_group(t('CSS'), $group);
-
-  $group = form_textfield(t('Block formats'), 'settings][block_formats', $edit->settings['block_formats'] ? $edit->settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6', 40, 250, t('Comma separated list of HTML block formats. You can only remove elements, not add.'));
-  $group .= form_select(t('Force BR new lines'), 'settings][force_br', $edit->settings['force_br'] ? $edit->settings['force_br'] : 'false', array('true' => 'true', 'false' => 'false'), t('Use BR tags for new lines rather than P.'));
-  $group .= form_select(t('Force P new lines'), 'settings][force_p', $edit->settings['force_p'] ? $edit->settings['force_p'] : 'true', array('true' => 'true', 'false' => 'false'), t('When enabled, Mozilla/Firefox will generate P elements on Enter/Return key and BR elements on Shift+Enter/Return..'));
-  $output .= form_group(t('Formatting'), $group);
-
+  $output .= '<div id="advancedstuff">'.form_group(('Options for Advanced Theme Only'), $group).'</div>';
+  $output .= "<script type='text/javascript'>\n";
+  if ($edit->settings['theme']!='advanced') {
+    $output .= "document.getElementById('advancedstuff').style.display = 'none';\n";
+  }
+  $output .= <<<EOD
+function themeSelect(theme) {
+  if (theme == 'advanced') {
+    document.getElementById('advancedstuff').style.display = 'block';  
+  } else {
+    document.getElementById('advancedstuff').style.display = 'none';  
+  }
+}
+</script>
+EOD;
   $output .= form_submit($btn);
-
-  return form($output);
+  return form($output, 'post', NULL, array('name'=>'tinymce_form'));
 }
 
 /**
@@ -608,7 +623,7 @@ function tinymce_profile_load($name = '') {
  */
 function tinymce_profile_overview() {
   $output = '';
-
+  $output .= t('<p>TinyMCE adds what-you-see-is-what-you-get (WYSIWYG) html editing to textareas in Drupal. Profiles can be defined based on user roles. TinyMCE profile can define which pages receive this TinyMCE capability, what buttons or themes are enabled for the editor, how the editor is displayed, and a few other editor functions. The default profile setting uses the "simple" TinyMCE theme which just shows the most minimal buttons set (bold, italic, underline, etc), but many other settings are available by switching to "advanced". And by default, textareas on affected pages will be automatically swapped out with the rich text editor. Users may disable the editor for any textarea without reloading the page. This setting can be reversed so that pages load with conventional textarea form fields. A link below each textarea allows TinyMCE to be turned on or off "on the fly".</p><p>Be aware that things can get confusing if a user is a member of roles defined in multiple profiles. In this case, the user will receive the profile based the role with lowest role id that applies to this profile. Did I mention it was confusing?</p>');
   $output .= t('<p><a href="%create-profile-url">Create new profile</a></p>', array('%create-profile-url' => url('admin/settings/tinymce/add')));
 
   $profiles = tinymce_profile_load();
