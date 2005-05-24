@@ -192,6 +192,10 @@ EOD;
     // We only load the TinyMCE js file once per request
     if (!$is_running && !empty($init)) {
       $is_running = TRUE;
+      if (is_dir(drupal_get_path('module', 'tinymce').'/imagemanager/')) {
+        // if tinymce imagemanager is installed
+        drupal_set_html_head('<script language="javascript" type="text/javascript" src="'. $base_url .'/'. drupal_get_path('module', 'tinymce') .'/imagemanager/jscripts/mcimagemanager.js"></script>');
+      }
       // For some crazy reason IE will only load this JS file if the absolute reference is given to it.
       drupal_set_html_head('<script language="javascript" type="text/javascript" src="'. $base_url .'/'. drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>');
       drupal_set_html_head($js_toggle);
@@ -454,6 +458,8 @@ function tinymce_admin($arg = NULL) {
 function tinymce_config($profile) {
   global $base_url;
   global $user;
+  $themepath = drupal_get_path('theme', init_theme()).'/';
+  $host = $base_url.'/';
 
   $settings = $profile->settings;
 
@@ -471,6 +477,10 @@ function tinymce_config($profile) {
   $init['force_br_newlines'] = $settings['force_br'] ? $settings['force_br'] : 'false';
   $init['force_p_newlines'] = $settings['force_p'] ? $settings['force_p'] : 'false';
   if ($init['theme'] == 'advanced') {
+    if (is_dir(drupal_get_path('module', 'tinymce').'/imagemanager/')) {
+      // if tinymce imagemanager is installed
+      $init['file_browser_callback'] = "mcImageManager.filebrowserCallBack"; 
+    }
     $init['theme_advanced_toolbar_location'] = $settings['toolbar_loc'] ? $settings['toolbar_loc'] : 'bottom';
     $init['theme_advanced_toolbar_align'] = $settings['toolbar_align'] ? $settings['toolbar_align'] : 'left';
     $init['theme_advanced_path_location'] = $settings['path_loc'] ? $settings['path_loc'] : 'none';
@@ -484,15 +494,14 @@ function tinymce_config($profile) {
   if ($settings['height']) $init['height'] =  $settings['height'];
 
   if ($settings['css_setting'] == 'theme') {
-    $css = drupal_get_path('theme', init_theme()) . '/style.css';
+    $css = $themepath . 'style.css';
     if (file_exists($css)) {
-      $init['content_css'] = $base_url .'/'. $css;
-    }
-    else if ($settings['css_setting'] == 'self') {
-      $init['content_css'] = $edit['css_path'];
+      $init['content_css'] = $host . $css;
     }
   }
-
+  else if ($settings['css_setting'] == 'self') {
+    $init['content_css'] = str_replace(array('%h', '%t'), array($host, $themepath), $settings['css_path']);
+  }
   return $init;
 }
 
@@ -559,13 +568,46 @@ function tinymce_profile_form($edit) {
   $output .= form_group(t('On save'), $group);
 
   $group = form_select(t('Editor CSS'), 'settings][css_setting', $edit->settings['css_setting'] ? $edit->settings['css_setting'] : 'theme', array('theme' => 'use theme css', 'self' => 'define css', 'none' => 'tinyMCE default'), t('Defines the CSS to be used in the editor area.<br />use theme css - get css from current Drupal theme.<br/>define css - enter path for css file below.<br />tinyMCE default - uses default CSS from editor.'));
-  $group .= form_textfield(t('CSS path'), 'settings][css_path', $edit->settings['css_path'], 40, 255, t('Enter path to CSS file (example: "/css/editor.css"). Select "define css" above.'));
+  $group .= form_textfield(t('CSS path'), 'settings][css_path', $edit->settings['css_path'], 40, 255, t('Enter path to CSS file (example: "css/editor.css").<br />Macros: %h (host name: http://www.example.com/), %t (path to theme: theme/yourtheme/)<br />Be sure to select "define css" above.'));
   $group .= form_textfield(t('CSS classes'), 'settings][css_classes', $edit->settings['css_classes'], 40, 255, t('Adds CSS classes to the "styles" droplist. Format is "&lt;title&gt;=&lt;class&gt;;"<br/> Example: "Header 1=header1;Header 2=header2;Header 3=header3;"<br />Leave blank to automatically import list of CSS classes from style sheet.'));
   $output .= form_group(t('CSS'), $group);
 
-  $group .= form_select(t('Force BR new lines'), 'settings][force_br', $edit->settings['force_br'] ? $edit->settings['force_br'] : 'false', array('true' => 'true', 'false' => 'false'), t('Use BR tags for new lines rather than P.'));
+  $group = form_select(t('Force BR new lines'), 'settings][force_br', $edit->settings['force_br'] ? $edit->settings['force_br'] : 'false', array('true' => 'true', 'false' => 'false'), t('Use BR tags for new lines rather than P.'));
   $group .= form_select(t('Force P new lines'), 'settings][force_p', $edit->settings['force_p'] ? $edit->settings['force_p'] : 'true', array('true' => 'true', 'false' => 'false'), t('When enabled, Mozilla/Firefox will generate P elements on Enter/Return key and BR elements on Shift+Enter/Return..'));
   $output .= form_group(t('Formatting'), $group);
+  $subgroup = '<div style="height:200px; overflow:auto; border: 1px solid #DDD">';
+  //$subgroup .= form_checkboxes('', 'settings][plugins', $edit->settings['plugins'] ? $edit->settings['plugins'] : array(''), _tinymce_get_plugins());
+  $subgroup .= form_hidden('settings][plugins', 0);
+  $subgroup .= form_hidden('settings][buttons', 0);
+  $plug_loc = drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/plugins/';
+  foreach(_tinymce_get_plugins() as $plugin => $text) {
+    //print $plugin.":".$text."<br />";
+    $subgroup .= _tinymce_checkbox($text, 'settings][plugins][', $plugin, in_array($plugin, $edit->settings['plugins'] ? $edit->settings['plugins'] : array()) ? true : false);
+    if ($buttons = _tinymce_get_buttons($plug_loc.$plugin.'/editor_plugin.js')){
+      $subgroup .= '<div style="margin-left:5em">';
+      foreach ($buttons as $button) {
+        $subgroup .= _tinymce_checkbox($button . ' button', 'settings][buttons][', $button, in_array($button, $edit->settings['buttons'] ? $edit->settings['buttons'] : array()) ? true : false);
+      }
+      $subgroup .= '</div>';
+    }
+  }
+  $subgroup .= '</div><br />';
+  $group .= form_group(t('TinyMCE Plugins'), $subgroup, t('Activate TinyMCE plugins and buttons. Each plugin can define buttons. In order to display these buttons in the editor, you need to activate both the plugin and its associated buttons. Silly, I know, but that\'s how they do it.'));
+  $output .= '<div id="advancedstuff">'.form_group(('Options for Advanced Theme Only'), $group).'</div>';
+  $output .= "<script type='text/javascript'>\n";
+  if ($edit->settings['theme']!='advanced') {
+    $output .= "document.getElementById('advancedstuff').style.display = 'none';\n";
+  }
+  $output .= <<<EOD
+function themeSelect(theme) {
+  if (theme == 'advanced') {
+    document.getElementById('advancedstuff').style.display = 'block';  
+  } else {
+    document.getElementById('advancedstuff').style.display = 'none';  
+  }
+}
+</script>
+EOD;
   $output .= form_submit($btn);
 
   $js = <<<EOD
