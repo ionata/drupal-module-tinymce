@@ -449,7 +449,7 @@ function tinymce_admin($arg = NULL) {
       $output = tinymce_profile_overview();
   }
 
-  return $output;
+  print theme('page', $output);
 }
 
 /**
