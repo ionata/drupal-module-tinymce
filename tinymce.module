@@ -1,7 +1,7 @@
 <?php
 // $Id$
-// A collaborative project by Matt Westgate <drupal at asitis dot org>
-// and Richard Bennett <richard.b@gritechnologies.com>
+// A collaborative project by Matt Westgate <drupal at asitis dot org>,
+// Richard Bennett <richard.b@ at ritechnologies dot com> and Jeff Robbins <robbins at jjeff dot com>
 
 /**
  * @file
@@ -51,14 +51,19 @@ function tinymce_img_assist_head() {
   global $base_url;
   // The tinymce docs say to include tiny_mce_popup.js, but this was killing IE!
   $popup_path = $base_url .'/'. drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce/tiny_mce_popup.js';
-  $img_assist_prop = $base_url .'/'. drupal_get_path('module', 'img_assist'). '/properties.js';
+  $img_assist_prop = $img_template = '';
+  if (module_exist('img_assist')) {
+    $img_assist_prop = $base_url .'/'. drupal_get_path('module', 'img_assist'). '/properties.js';
+    $img_assist_prop = '<script language="javascript" src="'. $img_assist_prop .'"></script>';
+
+    $img_template = variable_get('img_assist_img_html', img_assist_help('img_assist/template'));
+    $img_template = str_replace("\r\n", "\n", $img_template);
+    $img_template = str_replace("\n", '\n', addslashes($img_template));
+  }
   $clean_url    = variable_get('clean_url', 0);
-  $img_template = variable_get('img_assist_img_html', img_assist_help('img_assist/template'));
-  $img_template = str_replace("\r\n", "\n", $img_template);
-  $img_template = str_replace("\n", '\n', addslashes($img_template));
 
 $output = <<<EOD
-<script language="javascript" src="$img_assist_prop"></script>
+$img_assist_prop
 <script language="javascript">
   var clean_url    = $clean_url;
   var img_template = "$img_template";
@@ -70,6 +75,7 @@ $output = <<<EOD
       form['edit[nodePath]'].value = window.opener.tinyMCE.convertURL(form['edit[nodePath]'].value);
 
       var img = generate_image_tag(form, 'html');
+      //img = img.replace(/\\r|\\n|\\t/g, '');
 
       window.opener.tinyMCE.execInstanceCommand(myTextarea.name, 'mceInsertContent', false, img, true);
     }
@@ -116,14 +122,15 @@ function tinymce_textarea($op, $textarea_name) {
     $init = (array) theme('tinymce_theme', $init, $textarea_name, $init['theme'], $is_running);
     $settings = array();
     foreach ($init as $k => $v) {
-      if (strtolower($v) != 'true' && strtolower($v) != 'false') {
+      // Don't wrap the JS init in quotes for boolean values or functions.
+      if (strtolower($v) != 'true' && strtolower($v) != 'false' && $v[0] != '{') {
         $v = '"'. $v. '"';
       }
       $settings[] = $k. ' : '. $v;
     }
     $tinymce_settings = implode(",\n    ", $settings);
 
-    if (function_exists('img_assist_help')) {
+    if (module_exist('img_assist')) {
       $img_assist_js_on = $base_url .'/'. url('img_assist/add&editor=tinymce') .'&textarea=';
       $img_assist_js_off = $base_url .'/'. url('img_assist/add') .'&textarea=';
       $img_assist_on = $base_url .'/'. url('img_assist/add&editor=tinymce') .'&textarea=edit['. $textarea_name .']';
@@ -190,7 +197,7 @@ $wysiwyg_link = <<<EOD
 EOD;
 
     // We only load the TinyMCE js file once per request
-    if (!$is_running && !empty($init)) {
+    if (!$is_running) {
       $is_running = TRUE;
       if (is_dir(drupal_get_path('module', 'tinymce').'/imagemanager/')) {
         // if tinymce imagemanager is installed
@@ -222,7 +229,6 @@ function tinymce_user($type, &$edit, &$user, $category = NULL) {
     return array('tinymce_status' => $edit['tinymce_status']);
   }
 }
-
 
 /**
  * @addtogroup themeable
@@ -276,6 +282,9 @@ function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
   switch ($theme_name) {
     case 'advanced':
       $init['extended_valid_elements'] = 'a[href|target|name|title|onclick]';
+      $init['theme_advanced_buttons3_add_before'] = 'tablecontrols,separator';
+      $init['plugins'] = file_exists(drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce/plugins/drupalimage') ? 'drupalimage,table,emotions,fullscreen' : 'table,emotions,fullscreen';
+      $init['theme_advanced_buttons3_add'] = 'drupalimage,emotions,separator,fullscreen';
       break;
   }
 
@@ -311,81 +320,6 @@ function _tinymce_get_themes() {
   }
 
   return $themes;
-}
-
-/**
- * Return an array where key is plugins name and value is display text for listing.
- * Sniffs out readme.txt files.
- */
-
-function _tinymce_get_plugins() {
-  static $plugins = array();
-
-  if (!$plugins) {
-    $plug_loc = drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/plugins/';
-    if (is_dir($plug_loc) && $dh = opendir($plug_loc)) {
-      while (($file = readdir($dh)) !== false) {
-        if (!in_array($file, array('.', '..', 'CVS')) && is_dir($plug_loc . $file)) {
-          $readme = '';
-          foreach (array('readme.txt','ReadMe.txt','README.txt', 'Readme.txt', 'README.TXT') as $readme_name) {
-            if (file_exists($plug_loc.$file.'/'.$readme_name)) {
-              $readme = $plug_loc.$file.'/'.$readme_name;
-              break;
-            }
-          }
-          //print $file.":";
-          //$buttons = _tinymce_get_buttons($plug_loc.$file.'/editor_plugin.js');
-          $plugins[$file]  = $file." plugin";
-          $plugins[$file] .= $readme ? ' | <a href="'.$readme.'" onClick = "window.open(\''.$readme.'\',\'readme\',\'scrollbars,resizable,width=600,height=400\'); return false;">readme</a>' : '';
-        }
-      }
-      closedir($dh);
-      asort($plugins);
-    }
-  }
-  return $plugins;
-}
-
-
-/**
- * Parse a JavaScript file and attempt to find definitions of the _getControlHTML function.
- * return them as an array
- * This is far from adequate, but until TinyMCE has a standardized way of getting buttons, it'll have to do.
- */
-
-function _tinymce_get_buttons($js) {
-  $buttons = array();
-  // generally, the buttons are defined by switch() cases as part of the _getControlHTML function
-  if ($script = file_get_contents($js)) {
-    // search for the function
-    $regex = "/.unction.*?_getControlHTML[\w\W]*?(?=function)/";
-    preg_match($regex, $script, $matches);
-    unset($function);
-    $function = $matches[0];
-    // find 'case "foo"' within it, and remember "foo"
-    $regex = '/case.*?"(.*?)"/';
-    preg_match_all($regex, $function, $matches);
-    unset($buttons);
-    $buttons = $matches[1];
-    if ($function && !$buttons) {
-      // unfortunately some modules don't use cases...
-      // they use an array system...
-      $regex = '/^.*?ontrol.*?rray.*?\(([\w\W]*?)(?=\)[\s]*?;)/';
-      preg_match($regex, $function, $matches);
-      $array = $matches[1];
-      //var_dump($array);
-      $regex = '/\[[\'"](.*?)(?=[\'"].*?][,\)])/';
-      preg_match_all($regex, $array, $matches);
-      $buttons = $matches[1];
-    }
-    if ($function && !$buttons) {
-      //one more method... just for extra insanity
-      $regex = '/if.*?\(control.*?==\s*?[\'"](.*?)[\'"]/';
-      preg_match_all($regex, $function, $matches);
-      $buttons = $matches[1];
-    }
-  }
-  return $buttons;
 }
 
 /********************************************************************
@@ -458,8 +392,6 @@ function tinymce_admin($arg = NULL) {
 function tinymce_config($profile) {
   global $base_url;
   global $user;
-  $themepath = drupal_get_path('theme', init_theme()).'/';
-  $host = $base_url.'/';
 
   $settings = $profile->settings;
 
@@ -467,40 +399,38 @@ function tinymce_config($profile) {
 
   // Is tinymce on by default?
   $status = isset($user->tinymce_status) ? $user->tinymce_status : variable_get('tinymce_default_state', 0);
-  $init['mode'] = $status == 1 ? 'exact' : 'none';
-  $init['theme'] = $settings['theme'] ? $settings['theme'] : 'simple';
-  $init['document_base_url'] = "$base_url/";
+  $init['mode']               = $status == 1 ? 'exact' : 'none';
+  $init['theme']              = $settings['theme'] ? $settings['theme'] : 'simple';
+  $init['document_base_url']  = "$base_url/";
 
-  $init['verify_html'] = $settings['verify_html'] ? $settings['verify_html'] : 'false';
-  $init['auto_cleanup_word'] = $settings['msword'] ? $settings['msword'] : 'false';
-  $init['preformatted'] = $settings['preformatted'] ? $settings['preformatted'] : 'false';
-  $init['force_br_newlines'] = $settings['force_br'] ? $settings['force_br'] : 'false';
-  $init['force_p_newlines'] = $settings['force_p'] ? $settings['force_p'] : 'false';
+  $init['verify_html']        = $settings['verify_html'] ? $settings['verify_html'] : 'false';
+  $init['auto_cleanup_word']  = $settings['msword'] ? $settings['msword'] : 'false';
+  $init['preformatted']       = $settings['preformatted'] ? $settings['preformatted'] : 'false';
+  $init['force_br_newlines']  = $settings['force_br'] ? $settings['force_br'] : 'false';
+  $init['force_p_newlines']   = $settings['force_p'] ? $settings['force_p'] : 'false';
   if ($init['theme'] == 'advanced') {
     if (is_dir(drupal_get_path('module', 'tinymce').'/imagemanager/')) {
       // if tinymce imagemanager is installed
-      $init['file_browser_callback'] = "mcImageManager.filebrowserCallBack"; 
+      $init['file_browser_callback'] = "mcImageManager.filebrowserCallBack";
     }
-    $init['theme_advanced_toolbar_location'] = $settings['toolbar_loc'] ? $settings['toolbar_loc'] : 'bottom';
-    $init['theme_advanced_toolbar_align'] = $settings['toolbar_align'] ? $settings['toolbar_align'] : 'left';
-    $init['theme_advanced_path_location'] = $settings['path_loc'] ? $settings['path_loc'] : 'none';
-    $init['theme_advanced_blockformats'] = $settings['block_formats'] ? $settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6';
-    $init['plugins'] = $settings['plugins'] ? implode(',', $settings['plugins']) : '';
-    $init['theme_advanced_buttons3_add'] = $settings['buttons'] ? implode(',', $settings['buttons']) : '';
+    $init['theme_advanced_toolbar_location']  = $settings['toolbar_loc'] ? $settings['toolbar_loc'] : 'bottom';
+    $init['theme_advanced_toolbar_align']     = $settings['toolbar_align'] ? $settings['toolbar_align'] : 'left';
+    $init['theme_advanced_path_location']     = $settings['path_loc'] ? $settings['path_loc'] : 'none';
+    $init['theme_advanced_blockformats']      = $settings['block_formats'] ? $settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6';
   }
 
   if ($edit['css_classes']) $init['theme_advanced_styles'] = $settings['css_classes'];
-  if ($settings['width']) $init['width'] = $settings['width'];
-  if ($settings['height']) $init['height'] =  $settings['height'];
+  if ($settings['width'])   $init['width'] = $settings['width'];
+  if ($settings['height'])  $init['height'] =  $settings['height'];
 
   if ($settings['css_setting'] == 'theme') {
-    $css = $themepath . 'style.css';
+    $css = drupal_get_path('theme', init_theme()) . '/style.css';
     if (file_exists($css)) {
-      $init['content_css'] = $host . $css;
+      $init['content_css'] = $base_url .'/'. $css;
     }
-  }
-  else if ($settings['css_setting'] == 'self') {
-    $init['content_css'] = str_replace(array('%h', '%t'), array($host, $themepath), $settings['css_path']);
+    else if ($settings['css_setting'] == 'self') {
+      $init['content_css'] = $edit['css_path'];
+    }
   }
   return $init;
 }
@@ -568,46 +498,13 @@ function tinymce_profile_form($edit) {
   $output .= form_group(t('On save'), $group);
 
   $group = form_select(t('Editor CSS'), 'settings][css_setting', $edit->settings['css_setting'] ? $edit->settings['css_setting'] : 'theme', array('theme' => 'use theme css', 'self' => 'define css', 'none' => 'tinyMCE default'), t('Defines the CSS to be used in the editor area.<br />use theme css - get css from current Drupal theme.<br/>define css - enter path for css file below.<br />tinyMCE default - uses default CSS from editor.'));
-  $group .= form_textfield(t('CSS path'), 'settings][css_path', $edit->settings['css_path'], 40, 255, t('Enter path to CSS file (example: "css/editor.css").<br />Macros: %h (host name: http://www.example.com/), %t (path to theme: theme/yourtheme/)<br />Be sure to select "define css" above.'));
+  $group .= form_textfield(t('CSS path'), 'settings][css_path', $edit->settings['css_path'], 40, 255, t('Enter path to CSS file (example: "/css/editor.css"). Select "define css" above.'));
   $group .= form_textfield(t('CSS classes'), 'settings][css_classes', $edit->settings['css_classes'], 40, 255, t('Adds CSS classes to the "styles" droplist. Format is "&lt;title&gt;=&lt;class&gt;;"<br/> Example: "Header 1=header1;Header 2=header2;Header 3=header3;"<br />Leave blank to automatically import list of CSS classes from style sheet.'));
   $output .= form_group(t('CSS'), $group);
 
   $group = form_select(t('Force BR new lines'), 'settings][force_br', $edit->settings['force_br'] ? $edit->settings['force_br'] : 'false', array('true' => 'true', 'false' => 'false'), t('Use BR tags for new lines rather than P.'));
   $group .= form_select(t('Force P new lines'), 'settings][force_p', $edit->settings['force_p'] ? $edit->settings['force_p'] : 'true', array('true' => 'true', 'false' => 'false'), t('When enabled, Mozilla/Firefox will generate P elements on Enter/Return key and BR elements on Shift+Enter/Return..'));
   $output .= form_group(t('Formatting'), $group);
-  $subgroup = '<div style="height:200px; overflow:auto; border: 1px solid #DDD">';
-  //$subgroup .= form_checkboxes('', 'settings][plugins', $edit->settings['plugins'] ? $edit->settings['plugins'] : array(''), _tinymce_get_plugins());
-  $subgroup .= form_hidden('settings][plugins', 0);
-  $subgroup .= form_hidden('settings][buttons', 0);
-  $plug_loc = drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/plugins/';
-  foreach(_tinymce_get_plugins() as $plugin => $text) {
-    //print $plugin.":".$text."<br />";
-    $subgroup .= _tinymce_checkbox($text, 'settings][plugins][', $plugin, in_array($plugin, $edit->settings['plugins'] ? $edit->settings['plugins'] : array()) ? true : false);
-    if ($buttons = _tinymce_get_buttons($plug_loc.$plugin.'/editor_plugin.js')){
-      $subgroup .= '<div style="margin-left:5em">';
-      foreach ($buttons as $button) {
-        $subgroup .= _tinymce_checkbox($button . ' button', 'settings][buttons][', $button, in_array($button, $edit->settings['buttons'] ? $edit->settings['buttons'] : array()) ? true : false);
-      }
-      $subgroup .= '</div>';
-    }
-  }
-  $subgroup .= '</div><br />';
-  $group .= form_group(t('TinyMCE Plugins'), $subgroup, t('Activate TinyMCE plugins and buttons. Each plugin can define buttons. In order to display these buttons in the editor, you need to activate both the plugin and its associated buttons. Silly, I know, but that\'s how they do it.'));
-  $output .= '<div id="advancedstuff">'.form_group(('Options for Advanced Theme Only'), $group).'</div>';
-  $output .= "<script type='text/javascript'>\n";
-  if ($edit->settings['theme']!='advanced') {
-    $output .= "document.getElementById('advancedstuff').style.display = 'none';\n";
-  }
-  $output .= <<<EOD
-function themeSelect(theme) {
-  if (theme == 'advanced') {
-    document.getElementById('advancedstuff').style.display = 'block';  
-  } else {
-    document.getElementById('advancedstuff').style.display = 'none';  
-  }
-}
-</script>
-EOD;
   $output .= form_submit($btn);
 
   $js = <<<EOD
@@ -623,7 +520,7 @@ EOD;
 }
 
 /**
- * Load all profiles.
+ * Load all profiles. Just load one profile if $name is passed in.
  */
 function tinymce_profile_load($name = '') {
   static $profiles = array();
@@ -700,6 +597,14 @@ function tinymce_profile_validate($edit) {
     $errors['rids'] = t('You must select at least one role.');
   }
 
+  if ($edit['settings']['width'] != '' && !is_numeric($edit['settings']['width'])) {
+    $errors['width'] = t('Editor width must be a number');
+  }
+
+  if ($edit['settings']['height'] != '' && !is_numeric($edit['settings']['height'])) {
+    $errors['height'] = t('Editor height must be a number');
+  }
+
   foreach ($errors as $name => $message) {
     form_set_error($name, $message);
   }
@@ -746,21 +651,4 @@ function _tinymce_page_match($edit) {
     return $page_match;
   }
 }
-
-/**
- * A kludge to render checkboxes for our interlaced buttons and plugins.
- * A slight modification to the drupal form_checkbox function
- */
-
-function _tinymce_checkbox($title, $name, $value = 1, $checked = FALSE, $description = NULL, $attributes = NULL, $required = FALSE) {
-  $element = '<input type="checkbox" class="'. _form_get_class('form-checkbox', $required, _form_get_error($name)) .'" name="edit['. $name .']" id="edit-'. $name .'" value="'. $value .'"'. ($checked ? ' checked="checked"' : '') . drupal_attributes($attributes) .' />';
-  if (!is_null($title)) {
-    $element = '<label class="option">'. $element .' '. $title .'</label>';
-  }
-  // Note: because unchecked boxes are not included in the POST data, we include
-  // a form_hidden() which will be overwritten for a checked box.
-  // we're handling the form_hidden ourselves... thank you very much
-  return theme('form_element', NULL, $element, $description, $name, $required, _form_get_error($name));
-}
-
 ?>
