@@ -392,6 +392,8 @@ function tinymce_admin($arg = NULL) {
 function tinymce_config($profile) {
   global $base_url;
   global $user;
+  $themepath = drupal_get_path('theme', init_theme()).'/';
+  $host = $base_url.'/';
 
   $settings = $profile->settings;
 
@@ -424,13 +426,13 @@ function tinymce_config($profile) {
   if ($settings['height'])  $init['height'] =  $settings['height'];
 
   if ($settings['css_setting'] == 'theme') {
-    $css = drupal_get_path('theme', init_theme()) . '/style.css';
+    $css = $themepath . 'style.css';
     if (file_exists($css)) {
-      $init['content_css'] = $base_url .'/'. $css;
+      $init['content_css'] = $host . $css;
     }
-    else if ($settings['css_setting'] == 'self') {
-      $init['content_css'] = $edit['css_path'];
-    }
+  }
+  else if ($settings['css_setting'] == 'self') {
+    $init['content_css'] = str_replace(array('%h', '%t'), array($host, $themepath), $settings['css_path']);
   }
   return $init;
 }
@@ -474,7 +476,7 @@ function tinymce_profile_form($edit) {
   $group = form_textfield(t('Profile name'), 'name', $edit->name, 40, 128, t('Enter an unique name for this profile. This name is only visible in the tinymce administration page.'), NULL, TRUE);
   $group .= form_checkboxes(t('Roles allowed to use this profile'), 'rids', array_keys((array) $edit->rids), $roles, t('Select at least one role.'), NULL, TRUE);
   $group .= form_radios(t('Theme'), 'settings][theme', $edit->settings['theme'] ? $edit->settings['theme'] : 'simple',  _tinymce_get_themes(), t('Select the tinymce theme. The <em>advanced</em> theme will display advanced options below.'), FALSE ,array('onclick'=>'tinymceThemeOptions(this.value);'));
-  $group .= form_radios(t('Make tinymce visible on'), 'settings][access', $edit->settings['access'], array(t('specific pages'), t('all textareas')));
+  $group .= form_radios(t('Make tinymce visible on'), 'settings][access', $edit->settings['access'], array(t('all pages'), t('specific pages')));
   $group .= form_textarea(t('Specific pages'), 'settings][access_pages', $edit->settings['access_pages'] ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages'), 40, 5, t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are '<em>blog</em>' for the blog page and '<em>blog/*</em>' for every personal blog. '<em>&lt;front&gt;</em>' is the front page."));
   $output .= form_group(t('Basic setup'), $group);
 
@@ -498,7 +500,7 @@ function tinymce_profile_form($edit) {
   $output .= form_group(t('On save'), $group);
 
   $group = form_select(t('Editor CSS'), 'settings][css_setting', $edit->settings['css_setting'] ? $edit->settings['css_setting'] : 'theme', array('theme' => 'use theme css', 'self' => 'define css', 'none' => 'tinyMCE default'), t('Defines the CSS to be used in the editor area.<br />use theme css - get css from current Drupal theme.<br/>define css - enter path for css file below.<br />tinyMCE default - uses default CSS from editor.'));
-  $group .= form_textfield(t('CSS path'), 'settings][css_path', $edit->settings['css_path'], 40, 255, t('Enter path to CSS file (example: "/css/editor.css"). Select "define css" above.'));
+  $group .= form_textfield(t('CSS path'), 'settings][css_path', $edit->settings['css_path'], 40, 255, t('Enter path to CSS file (example: "css/editor.css").<br />Macros: %h (host name: http://www.example.com/), %t (path to theme: theme/yourtheme/)<br />Be sure to select "define css" above.'));
   $group .= form_textfield(t('CSS classes'), 'settings][css_classes', $edit->settings['css_classes'], 40, 255, t('Adds CSS classes to the "styles" droplist. Format is "&lt;title&gt;=&lt;class&gt;;"<br/> Example: "Header 1=header1;Header 2=header2;Header 3=header3;"<br />Leave blank to automatically import list of CSS classes from style sheet.'));
   $output .= form_group(t('CSS'), $group);
 
@@ -511,6 +513,7 @@ function tinymce_profile_form($edit) {
 <script type='text/javascript'>
   function tinymceThemeOptions(theme) {
     document.getElementById('advancedThemeSettings').style.display = theme == 'advanced' ? 'block' : 'none';
+    document.getElementById('advancedStuff').style.display = theme == 'advanced' ? 'block' : 'none';
   }
 </script>
 EOD;
