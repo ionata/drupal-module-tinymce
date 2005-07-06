@@ -261,6 +261,7 @@ function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
     case 'log':
     case 'img_assist_pages':
     case 'caption':
+    case 'pages':
       unset($init);
       break;
 
