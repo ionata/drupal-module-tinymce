@@ -70,7 +70,6 @@ $img_assist_prop
 
   function insertImage(form) {
     if (window.opener) {
-      form['edit[thumbpath]'].value = window.opener.tinyMCE.convertURL(form['edit[thumbpath]'].value);
       form['edit[filepath]'].value = window.opener.tinyMCE.convertURL(form['edit[filepath]'].value);
       form['edit[nodePath]'].value = window.opener.tinyMCE.convertURL(form['edit[nodePath]'].value);
 
@@ -641,7 +640,7 @@ function _tinymce_page_match($edit) {
     }
   }
 
-  if ($edit->settings['access'] == 1) {
+  if ($edit->settings['access'] == 0) {
     return TRUE;
   }
   else {
