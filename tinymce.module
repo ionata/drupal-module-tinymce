@@ -57,8 +57,8 @@ function tinymce_img_assist_head() {
     $img_assist_prop = '<script language="javascript" src="'. $img_assist_prop .'"></script>';
 
     $img_template = variable_get('img_assist_img_html', img_assist_help('img_assist/template'));
-    $img_template = str_replace("\r\n", "\n", $img_template);
-    $img_template = str_replace("\n", '\n', addslashes($img_template));
+    $nl = "\n";
+    $img_template = preg_replace('/\n|\r|(\r\n)/m', '\\'. $nl, $img_template);
   }
   $clean_url    = variable_get('clean_url', 0);
 
@@ -66,7 +66,7 @@ $output = <<<EOD
 $img_assist_prop
 <script language="javascript">
   var clean_url    = $clean_url;
-  var img_template = "$img_template";
+  var img_template = '$img_template';
 
   function insertImage(form) {
     if (window.opener) {
