@@ -257,10 +257,11 @@ function tinymce_user($type, &$edit, &$user, $category = NULL) {
 function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
   switch ($textarea_name) {
     // Disable tinymce for these textareas
-    case 'log':
+    case 'log': // Book log
     case 'img_assist_pages':
-    case 'caption':
+    case 'caption': // signature
     case 'pages':
+    case 'settings][access_pages': //TinyMCE profile settings.
       unset($init);
       break;
 
@@ -453,7 +454,7 @@ function tinymce_profile_form($edit) {
 
   // Only display the roles that currently don't have a tinymce profile. One
   // profile per role.
-  $orig_roles = user_roles();
+  $orig_roles = user_roles(FALSE, 'access tinymce');
   $roles = $orig_roles;
   if (arg(3) == 'add') {
     $result = db_query('SELECT DISTINCT(rid) FROM {tinymce_role}');
@@ -461,7 +462,7 @@ function tinymce_profile_form($edit) {
       unset($roles[$data->rid]);
     }
     if (!$roles) {
-      drupal_set_message(t('You will not be allowed to create a new profile since all user roles have already been assigned profiles. First remove an existing tinymce profile from at least one role in order to create a new profile.'), 'error');
+      drupal_set_message(t('You will not be allowed to create a new profile since all user roles have already been assigned profiles. Either remove an existing tinymce profile from at least one role or assign another role the \'access tinymce\' permission.'), 'error');
     }
     else if (count($orig_roles) != count($roles)) {
       drupal_set_message(t('Not all user roles are shown since they already have tinymce profiles. You must first unassign profiles in order to add them to a new one.'));
@@ -474,7 +475,7 @@ function tinymce_profile_form($edit) {
   }
 
   $group = form_textfield(t('Profile name'), 'name', $edit->name, 40, 128, t('Enter an unique name for this profile. This name is only visible in the tinymce administration page.'), NULL, TRUE);
-  $group .= form_checkboxes(t('Roles allowed to use this profile'), 'rids', array_keys((array) $edit->rids), $roles, t('Select at least one role.'), NULL, TRUE);
+  $group .= form_checkboxes(t('Roles allowed to use this profile'), 'rids', array_keys((array) $edit->rids), $roles, t('Select at least one role. Listed are the roles with \'access tinymce\' permission.'), NULL, TRUE);
   $group .= form_radios(t('Theme'), 'settings][theme', $edit->settings['theme'] ? $edit->settings['theme'] : 'simple',  _tinymce_get_themes(), t('Select the tinymce theme. The <em>advanced</em> theme will display advanced options below.'), FALSE ,array('onclick'=>'tinymceThemeOptions(this.value);'));
   $group .= form_radios(t('Make tinymce visible on'), 'settings][access', $edit->settings['access'], array(t('all pages'), t('specific pages')));
   $group .= form_textarea(t('Specific pages'), 'settings][access_pages', $edit->settings['access_pages'] ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages'), 40, 5, t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are '<em>blog</em>' for the blog page and '<em>blog/*</em>' for every personal blog. '<em>&lt;front&gt;</em>' is the front page."));
