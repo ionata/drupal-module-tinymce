@@ -407,7 +407,6 @@ function tinymce_config($profile) {
   $init['document_base_url']  = "$base_url/";
 
   $init['verify_html']        = $settings['verify_html'] ? $settings['verify_html'] : 'false';
-  $init['auto_cleanup_word']  = $settings['msword'] ? $settings['msword'] : 'false';
   $init['preformatted']       = $settings['preformatted'] ? $settings['preformatted'] : 'false';
   $init['force_br_newlines']  = $settings['force_br'] ? $settings['force_br'] : 'false';
   $init['force_p_newlines']   = $settings['force_p'] ? $settings['force_p'] : 'false';
@@ -495,8 +494,7 @@ function tinymce_profile_form($edit) {
   $group .= form_textfield(t('Editor height'), 'settings][height', $edit->settings['height'], 3, 5, t('Set height of editor. Leave blank to use size of textarea being replaced.'));
   $output .= form_group(t('Editor display'), $group);
 
-  $group = form_select(t('Auto cleanup Word'), 'settings][msword', $edit->settings['msword'], array('true' => 'true', 'false' => 'false'), t('Automatically cleanup MS Office/Word HTML will be executed automatically on paste operations. (Only works in Internet Explorer)'));
-  $group .= form_select(t('Verify HTML'), 'settings][verify_html', $edit->settings['verify_html'], array('true' => 'true', 'false' => 'false'), t('Should the HTML contents be verified or not? Verifying will strip &lt;head&gt tags, so choose false if you will be editing full page HTML.'));
+  $group = form_select(t('Verify HTML'), 'settings][verify_html', $edit->settings['verify_html'], array('true' => 'true', 'false' => 'false'), t('Should the HTML contents be verified or not? Verifying will strip &lt;head&gt tags, so choose false if you will be editing full page HTML.'));
   $group .= form_select(t('Preformatted'), 'settings][preformatted', $edit->settings['preformatted'], array('false' => 'false', 'true' => 'true'), t('If this option is set to true, the editor will insert TAB characters on tab and preserve other whitespace characters just like a PRE HTML element does.'));
   $output .= form_group(t('On save'), $group);
 
@@ -553,10 +551,10 @@ function tinymce_profile_load($name = '') {
  */
 function tinymce_profile_overview() {
   $output = '';
-  $output .= t('<p><a href="%create-profile-url">Create new profile</a></p>', array('%create-profile-url' => url('admin/settings/tinymce/add')));
 
   $profiles = tinymce_profile_load();
   if ($profiles) {
+    $output .= t('<p><a href="%create-profile-url">Create new profile</a></p>', array('%create-profile-url' => url('admin/settings/tinymce/add')));
     $roles = user_roles();
     $header = array(t('Profile'), t('Roles'), t('Operations'));
     foreach ($profiles as $p) {
@@ -565,7 +563,7 @@ function tinymce_profile_overview() {
     $output .= theme('table', $header, $rows). '<p>&nbsp;</p>';
   }
   else {
-    $output .= t('<p>No profiles found.</p>');
+    drupal_set_message(t('No profiles found. Click here to <a href="%create-profile-url">create a new profile</a>.', array('%create-profile-url' => url('admin/settings/tinymce/add'))));
   }
 
   $group = form_radios(t('Default tinymce state'), 'tinymce_default_state', variable_get('tinymce_default_state', 0), array(t('Off'), t('On')), t('Should tinymce be enabled or disabled by default when it\'s first loaded from a textarea? Note: The user may override this setting in their profile.'));
@@ -635,7 +633,7 @@ function _tinymce_page_match($edit) {
     // PHP input formats are #2 in the filters table.
     preg_match("|^node/(\d+)(/edit)$|", $_GET['q'], $match);
     if (intval($match[1]) > 0) {
-      if (db_result(db_query('SELECT format FROM {node} WHERE nid = %d AND format = 2', $match[1]))) {
+      if (db_result(db_query('SELECT format FROM {node_revisions} WHERE nid = %d AND vid = %d AND format = 2', $match[1], $match[1]))) {
         return FALSE;
       }
     }
