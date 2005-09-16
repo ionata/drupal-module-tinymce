@@ -33,7 +33,7 @@ function tinymce_help($section) {
       return "node/*\nuser/*\ncomment/*";
 
     case 'admin/settings/tinymce':
-      return t('<p>TinyMCE adds what-you-see-is-what-you-get (WYSIWYG) html editing to textareas. Profiles can be defined based on user roles. TinyMCE profile can define which pages receive this TinyMCE capability, what buttons or themes are enabled for the editor, how the editor is displayed, and a few other editor functions. The default profile setting uses the "simple" TinyMCE theme which just shows the most minimal buttons set (bold, italic, underline, etc), but many other settings are available by switching to "advanced". And by default, textareas on affected pages will be automatically swapped out with the rich text editor. Users may disable the editor for any textarea without reloading the page. This setting can be reversed so that pages load with conventional textarea form fields. A link below each textarea allows TinyMCE to be turned on or off "on the fly".</p><p>Be aware that things can get confusing if a user is a member of roles defined in multiple profiles. In this case, the user will receive the profile for role with lowest role id they belong to. Did I mention it was confusing?</p>');
+      return t('<p>TinyMCE adds what-you-see-is-what-you-get (WYSIWYG) html editing to textareas. Profiles can be defined based on user roles. TinyMCE profile can define which pages receive this TinyMCE capability, what buttons or themes are enabled for the editor, how the editor is displayed, and a few other editor functions. The default profile setting uses the "simple" TinyMCE theme which just shows the most minimal buttons set (bold, italic, underline, etc), but many other settings are available by switching to "advanced". And by default, textareas on affected pages will be automatically swapped out with the rich text editor. Users may disable the editor for any textarea without reloading the page. This setting can be reversed so that pages load with conventional textarea form fields. A link below each textarea allows TinyMCE to be turned on or off "on the fly".</p><p>Be aware that things can get confusing if a user is a member of roles defined in multiple profiles. In this case, the user will receive the profile for role with lowest role id they belong to. Did I mention it was confusing?</p><p>lastly, only users with the <code>access tinymce</code> permission will be able to use TinyMCE.</p>');
   }
 }
 
@@ -188,10 +188,10 @@ $wysiwyg_link = <<<EOD
   }
   if (typeof(document.execCommand) == 'undefined') {
     img_assist.href = "$img_assist_off";
-    document.write('<div style="font-size:x-small">$no_wysiwyg</div>');
+    document.write('<div style="font-size:x-small">$no_wysiwyg<\\/div>');
   }
   else {
-    document.write("<div><a href=\"javascript:mceToggle('edit-$textarea_name', 'wysiwyg4$textarea_name');\" id=\"wysiwyg4$textarea_name\">$link_text</div></a>");
+    document.write("<div><a href=\"javascript:mceToggle('edit-$textarea_name', 'wysiwyg4$textarea_name');\" id=\"wysiwyg4$textarea_name\">$link_text<\\/div><\\/a>");
   }
 </script>
 EOD;
