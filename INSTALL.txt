@@ -45,6 +45,12 @@ INSTALLATION:
 
      administer > settings > tinymce
 
+6. Optionally download the "TinyMCE compressor" from
+
+   http://tinymce.moxiecode.com/download.php
+
+   And follow the instructions that come with that package.
+
 Create new content as a role that has TinyMCE permissions and see TinyMCE in
 action!
 
