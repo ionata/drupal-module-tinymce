@@ -34,7 +34,7 @@ $plugins['advlink']['extended_valid_elements'] = array('a[name|href|target|title
 $plugins['default'] = array();
 $plugins['default']['theme_advanced_buttons1'] = array('bold', 'italic', 'underline', 'strikethrough', 'justifyleft', 'justifycenter', 'justifyright', 'justifyfull', 'bullist', 'numlist', 'outdent', 'indent', 'undo', 'redo', 'link', 'unlink', 'anchor');
 $plugins['default']['theme_advanced_buttons2'] = array('image', 'cleanup', 'forecolor', 'backcolor', 'sup', 'sub', 'code', 'hr');
-$plugins['default']['theme_advanced_buttons2'] = array('cut', 'copy', 'paste', 'visualaid', 'removeformat', 'charmap', 'help');
+$plugins['default']['theme_advanced_buttons3'] = array('cut', 'copy', 'paste', 'visualaid', 'removeformat', 'charmap', 'help');
 
 $plugins['contextmenu'] = array();
 
