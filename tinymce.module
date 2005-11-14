@@ -229,8 +229,9 @@ EOD;
 function tinymce_user($type, &$edit, &$user, $category = NULL) {
   if ($type == 'form' && $category == 'account' && user_access('access tinymce')) {
     $user_status = $edit['tinymce_status'] != NULL ? $edit['tinymce_status'] : ($user->tinymce_status != NULL ? $user->tinymce_status : variable_get('tinymce_default_state', 0));
-    $form = form_radios(t('Default status'), 'tinymce_status', $user_status, array(t('Off'), t('On')), t('Should rich-text editing be enabled or disabled by default in textarea fields?'));
-    return array(array('title' => t('TinyMCE settings'), 'data' => $form));
+    $form['tinymce'] = array('#type' => 'fieldset', '#title' => t('TinyMCE settings'), '#weight' => 5, '#collapsible' => TRUE, '#collapsed' => TRUE);
+    $form['tinymce']['tinymce_status'] = array('#type' => 'radios', '#title' => t('Default status'), '#default_value' => $user_status, '#options' => array(t('Off'), t('On')), '#description' => t('Should rich-text editing be enabled or disabled by default in textarea fields?'));    
+    return array('tinymce' => $form);
   }
   if ($type == 'validate') {
     return array('tinymce_status' => $edit['tinymce_status']);
@@ -345,7 +346,7 @@ function _tinymce_get_buttons($skip_metadata = TRUE) {
       $file = drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce/plugins/'. $name .'/editor_plugin_src.js';
       // Grab the plugin metadata by scanning the *.js file.
       if (file_exists($file)) {
-        $lines = file($file, 'r');
+        $lines = file($file);
         $has_longname = FALSE;
         $has_infourl = FALSE;
         foreach ($lines as $line) {
@@ -579,22 +580,19 @@ function tinymce_profile_form($edit) {
     $btn = t('Create profile');
   }
   else {
-    $output = form_hidden('old_name', $edit->name);
+    $form['old_name'] = array('#type' => 'hidden', '#value' => $edit->name);
     $btn = t('Update profile');
   }
 
-  $group = form_textfield(t('Profile name'), 'name', $edit->name, 40, 128, t('Enter a unique name for this profile. This name is only visible in the tinymce administration page.'), NULL, TRUE);
-  $group .= form_checkboxes(t('Roles allowed to use this profile'), 'rids', array_keys((array) $edit->rids), $roles, t('Select at least one role. Listed are the roles with \'access tinymce\' permission.'), NULL, TRUE);
-  // This line will come back when we resurrect the ability to use custom TinyMCE themes.
-  //$group .= form_radios(t('Theme'), 'settings][theme', $edit->settings['theme'] ? $edit->settings['theme'] : 'simple',  _tinymce_get_themes(), t('Select the tinymce theme. The <em>advanced</em> theme will display advanced options below.'), FALSE ,array('onclick'=>'tinymceThemeOptions(this.value);'));
-  $group .= form_hidden('settings][theme', $edit->settings['theme'] ? $edit->settings['theme'] : 'advanced');
-  $group .= form_radios(t('Make tinymce visible on'), 'settings][access', $edit->settings['access'], array(t('all pages'), t('specific pages')));
-  $group .= form_textarea(t('Specific pages'), 'settings][access_pages', $edit->settings['access_pages'] ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages'), 40, 5, t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are '<em>blog</em>' for the blog page and '<em>blog/*</em>' for every personal blog. '<em>&lt;front&gt;</em>' is the front page."));
-  $output .= form_group(t('Basic setup'), $group);
+  $form['basic'] = array('#type' => 'fieldset', '#title' => t('Basic setup'), '#collapsible' => TRUE, '#collapsed' => TRUE);
+  $form['basic']['name'] = array('#type' => 'textfield', '#title' => t('Profile name'), '#default_value' => $edit->name, '#size' => 40, '#maxlength' => 128, '#description' => t('Enter a unique name for this profile. This name is only visible in the tinymce administration page.'), '#required' => TRUE);
+  $form['basic']['rids'] = array('#type' => 'checkboxes', '#title' => t('Roles allowed to use this profile'), '#default_value' => array_keys((array) $edit->rids), '#options' => $roles, '#description' =>  t('Select at least one role. Listed are the roles with \'access tinymce\' permission.'), '#required' => TRUE);
+  $form['basic']['theme'] = array('#type' => 'hidden', '#value' => $edit->settings['theme'] ? $edit->settings['theme'] : 'advanced');
+  $form['basic']['access'] = array('#type' => 'radios', '#title' => t('Make tinymce visible on'), '#default_value' => $edit->settings['access'], '#options' => array(t('all pages'), t('specific pages')));
+  $form['basic']['access_pages'] = array('#type' => 'textarea', '#title' => t('Specific pages'), '#default_value' => $edit->settings['access_pages'] ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages'), '#cols' => 40, '#rows' => 5, '#description' => t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are '<em>blog</em>' for the blog page and '<em>blog/*</em>' for every personal blog. '<em>&lt;front&gt;</em>' is the front page."));
 
-  $output .= t('<h3>Options</h3>');
-
-  $group = '';
+  $form['buttons'] = array('#type' => 'fieldset', '#title' => t('Buttons'), '#collapsible' => TRUE, '#collapsed' => TRUE, '#theme' => 'tinymce_profile_form_buttons');
+  
   $metadata = _tinymce_get_buttons(FALSE);
   // Generate the button list.
   foreach($metadata as $name => $meta) {
@@ -619,9 +617,8 @@ function tinymce_profile_form($edit) {
           $title .= ' - '. $b;
         }
 
-        $form_name = 'settings][plugins]['. $name. ']['. $button;
-        $form_value = $edit->settings['plugins'][$name][$button];
-        $checkboxes[] = form_checkbox($title, $form_name, 1, $form_value, $description);
+        $form_value = $edit->settings[$name. $button];
+        $form['buttons'][$name . $button] = array('#type' => 'checkbox', '#title' => $title, '#default_value' => $form_value, '#description' => $description);
       }
     }
     else {
@@ -629,43 +626,59 @@ function tinymce_profile_form($edit) {
       if ($metadata[$name]['infourl']) {
         $title = '<a href="'. $metadata[$name]['infourl'] .'" target="_blank">'. $title .'</a>';
       }
-      $form_name = 'settings][plugins]['. $name. ']';
-      $form_value = $edit->settings['plugins'][$name];
-      $checkboxes[] = form_checkbox($title, $form_name, 1, $form_value, $description);
+      $form_value = $edit->settings[$name];
+      $form['buttons'][$name] = array('#type' => 'checkbox', '#title' => $title, '#default_value' => $form_value, '#description' => $description);
     }
+  }
+  
+  $form['appearance'] = array('#type' => 'fieldset', '#title' => t('Editor appearance'), '#collapsible' => TRUE, '#collapsed' => TRUE);
+  $form['appearance']['toolbar_loc'] = array('#type' => 'select', '#title' => t('Toolbar location'), '#default_value' => $edit->settings['toolbar_loc'], '#options' => array('bottom' => 'bottom', 'top' => 'top'), '#description' => t('Show toolbar at the top or bottom of the editor area?'));
+  $form['appearance']['toolbar_align'] = array('#type' => 'select', '#title' => t('Toolbar alignment'), '#default_value' => $edit->settings['toolbar_align'], '#options' => array('center' => 'center', 'left' => 'left', 'right' => 'right'), '#description' => t('Align tool icons left, center, or right within the toolbar.'));
+  $form['appearance']['path_loc'] = array('#type' => 'select', '#title' => t('Path location'), '#default_value' => $edit->settings['path_loc'], '#options' => array('none' => 'none', 'top' => 'top', 'bottom' => 'bottom'), '#description' => t('Path to html elements (i.e. "body>table>tr>td"). Show at top, bottom, or not at all.'));
+  $form['appearance']['resizing'] = array('#type' => 'select', '#title' => t('Enable resizing button'), '#default_value' => $edit->settings['resizing'], '#options' => array('false' => 'false', 'true' => 'true'), '#description' => t(' This option gives you the ability to enable/disable the resizing button.'));
+  $form['appearance']['block_formats'] = array('#type' => 'textfield', '#title' => t('Block formats'), '#default_value' => $edit->settings['block_formats'] ? $edit->settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6', '#size' => 40, '#maxlength' => 250, '#description' => t('Comma separated list of HTML block formats. You can only remove elements, not add.'));
+ 
+  $form['output'] = array('#type' => 'fieldset', '#title' => t('Cleanup/Output'), '#collapsible' => TRUE, '#collapsed' => TRUE);
+  $form['output']['verify_html'] = array('#type' => 'select', '#title' => t('Verify HTML'), '#default_value' => $edit->settings['verify_html'], '#options' => array('true' => 'true', 'false' => 'false'), '#description' => t('Should the HTML contents be verified or not? Verifying will strip &lt;head&gt tags, so choose false if you will be editing full page HTML.'));
+  $form['output']['preformatted'] = array('#type' => 'select', '#title' => t('Preformatted'), '#default_value' => $edit->settings['preformatted'], '#options' => array('false' => 'false', 'true' => 'true'), '#description' => t('If this option is set to true, the editor will insert TAB characters on tab and preserve other whitespace characters just like a PRE HTML element does.'));
+  $form['output']['convert_fonts_to_styles'] = array('#type' => 'select', '#title' => t('Convert &lt;font&gt; tags to styles'), '#default_value' => $edit->settings['convert_fonts_to_styles'], '#options' => array('true' => 'true', 'false' => 'false'), '#description' => t('If you set this option to true, font size, font family, font color and font background color will be replaced by inline styles.'));
+
+  $form['css'] = array('#type' => 'fieldset', '#title' => t('CSS'), '#collapsible' => TRUE, '#collapsed' => TRUE);
+  $form['css']['css_setting'] = array('#type' => 'select', '#title' => t('Editor CSS'), '#default_value' => $edit->settings['css_setting'] ? $edit->settings['css_setting'] : 'theme', '#options' => array('theme' => 'use theme css', 'self' => 'define css', 'none' => 'tinyMCE default'), '#description' => t('Defines the CSS to be used in the editor area.<br />use theme css - get css from current Drupal theme.<br/>define css - enter path for css file below.<br />tinyMCE default - uses default CSS from editor.'));
+  $form['css']['css_path'] = array('#type' => 'textfield', '#title' => t('CSS path'), '#default_value' => $edit->settings['css_path'], '#size' => 40, '#maxlength' => 255, '#description' => t('Enter path to CSS file (example: "css/editor.css").<br />Macros: %h (host name: http://www.example.com/), %t (path to theme: theme/yourtheme/)<br />Be sure to select "define css" above.'));
+  $form['css']['css_classes'] = array('#type' => 'textfield', '#title' => t('CSS classes'), '#default_value' => $edit->settings['css_classes'], '#size' => 40, '#maxlength' => 255, '#description' => t('Adds CSS classes to the "styles" droplist. Format is "&lt;title&gt;=&lt;class&gt;;"<br/> Example: "Header 1=header1;Header 2=header2;Header 3=header3;"<br />Leave blank to automatically import list of CSS classes from style sheet.'));
+
+  $form['submit'] = array('#type' => 'submit', '#value' => $btn);
+  
+  $output .= drupal_get_form('tinymce_profile_form', $form);
+
+  return $output;
+}
+
+/**
+ * Layout for the buttons in the tinymce profile form
+ */
+function theme_tinymce_profile_form_buttons($form) {
+  $buttons = array();
+   
+  // Flatten forms array
+  foreach (element_children($form) as $key) {
+    $buttons[] = form_render($form[$key]);
   }
 
   // Split the checkboxes into 2 columns for a table view
-  $split = ceil(count($checkboxes) / 2);
-  $col[] = array_slice($checkboxes, 0, $split);
-  $col[] = array_slice($checkboxes, $split);
+  $split = ceil(count($buttons) / 2);
+  $col[] = array_slice($buttons, 0, $split);
+  $col[] = array_slice($buttons, $split);
 
   foreach ($col as $c) {
     $r[] = array('data' => implode('<br />', $c), 'valign' => 'top');
   }
   $row[] = $r;
-  $output .= form_group_collapsible(('Buttons'), theme('table', array(), $row, array('width' => '100%')), TRUE);
+    
+  $output = theme('table', array(), $row, array('width' => '100%'));
 
-  $group = form_select(t('Toolbar location'), 'settings][toolbar_loc', $edit->settings['toolbar_loc'], array('bottom' => 'bottom', 'top' => 'top'), t('Show toolbar at the top or bottom of the editor area?'));
-  $group .= form_select(t('Toolbar alignment'), 'settings][toolbar_align', $edit->settings['toolbar_align'], array('center' => 'center', 'left' => 'left', 'right' => 'right'), t('Align tool icons left, center, or right within the toolbar.'));
-  $group .= form_select(t('Path location'), 'settings][path_loc', $edit->settings['path_loc'], array('none' => 'none', 'top' => 'top', 'bottom' => 'bottom'), t('Path to html elements (i.e. "body>table>tr>td"). Show at top, bottom, or not at all.'));
-  $group .= form_select(t('Enable resizing button'), 'settings][resizing', $edit->settings['resizing'], array('false' => 'false', 'true' => 'true'), t(' This option gives you the ability to enable/disable the resizing button.'));
-  $group .= form_textfield(t('Block formats'), 'settings][block_formats', $edit->settings['block_formats'] ? $edit->settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6', 40, 250, t('Comma separated list of HTML block formats. You can only remove elements, not add.'));
-  $output .= form_group_collapsible(('Editor appearance'), $group, TRUE);
-
-  $group = form_select(t('Verify HTML'), 'settings][verify_html', $edit->settings['verify_html'], array('true' => 'true', 'false' => 'false'), t('Should the HTML contents be verified or not? Verifying will strip &lt;head&gt tags, so choose false if you will be editing full page HTML.'));
-  $group .= form_select(t('Preformatted'), 'settings][preformatted', $edit->settings['preformatted'], array('false' => 'false', 'true' => 'true'), t('If this option is set to true, the editor will insert TAB characters on tab and preserve other whitespace characters just like a PRE HTML element does.'));
-  $group .= form_select(t('Convert &lt;font&gt; tags to styles'), 'settings][convert_fonts_to_styles', $edit->settings['convert_fonts_to_styles'], array('true' => 'true', 'false' => 'false'), t('If you set this option to true, font size, font family, font color and font background color will be replaced by inline styles.'));
-  $output .= form_group_collapsible(t('Cleanup/Output'), $group, TRUE);
-
-  $group = form_select(t('Editor CSS'), 'settings][css_setting', $edit->settings['css_setting'] ? $edit->settings['css_setting'] : 'theme', array('theme' => 'use theme css', 'self' => 'define css', 'none' => 'tinyMCE default'), t('Defines the CSS to be used in the editor area.<br />use theme css - get css from current Drupal theme.<br/>define css - enter path for css file below.<br />tinyMCE default - uses default CSS from editor.'));
-  $group .= form_textfield(t('CSS path'), 'settings][css_path', $edit->settings['css_path'], 40, 255, t('Enter path to CSS file (example: "css/editor.css").<br />Macros: %h (host name: http://www.example.com/), %t (path to theme: theme/yourtheme/)<br />Be sure to select "define css" above.'));
-  $group .= form_textfield(t('CSS classes'), 'settings][css_classes', $edit->settings['css_classes'], 40, 255, t('Adds CSS classes to the "styles" droplist. Format is "&lt;title&gt;=&lt;class&gt;;"<br/> Example: "Header 1=header1;Header 2=header2;Header 3=header3;"<br />Leave blank to automatically import list of CSS classes from style sheet.'));
-  $output .= form_group_collapsible(t('CSS'), $group, TRUE);
-
-  $output .= form_submit($btn);
-
-  return form($output);
+  return $output;
 }
 
 /**
@@ -713,11 +726,13 @@ function tinymce_profile_overview() {
     drupal_set_message(t('No profiles found. Click here to <a href="%create-profile-url">create a new profile</a>.', array('%create-profile-url' => url('admin/settings/tinymce/add'))));
   }
 
-  $group = form_radios(t('Default tinymce state'), 'tinymce_default_state', variable_get('tinymce_default_state', 0), array(t('Off'), t('On')), t('Should tinymce be enabled or disabled by default when it\'s first loaded from a textarea? Note: The user may override this setting in their profile.'));
-  $output .= form_group(t('Default settings'), $group);
-  $output .= form_submit(t('Save settings'));
+  $form['settings'] = array('#type' => 'fieldset', '#title' => t('Default settings'), '#collapsible' => TRUE);
+  $form['settings']['tinymce_default_state'] = array('#type' => 'radios', '#title' => t('Default tinymce state'), '#default_value' => variable_get('tinymce_default_state', 0), '#options' => array(t('Off'), t('On')), '#description' => t('Should tinymce be enabled or disabled by default when it\'s first loaded from a textarea? Note: The user may override this setting in their profile.'));
+  $form['settings']['submit'] = array('#type' => 'submit', '#value' => t('Save settings'));
 
-  return form($output);
+  $output .= drupal_get_form('settings', $form);
+  
+  return $output;
 }
 
 /**
@@ -726,9 +741,12 @@ function tinymce_profile_overview() {
 function tinymce_profile_save($edit) {
   db_query("DELETE FROM {tinymce_settings} WHERE name = '%s' or name = '%s'", $edit['name'], $edit['old_name']);
   db_query("DELETE FROM {tinymce_role} WHERE name = '%s' or name = '%s'", $edit['name'], $edit['old_name']);
-  db_query("INSERT INTO {tinymce_settings} (name, settings) VALUES ('%s', '%s')", $edit['name'], serialize($edit['settings']));
-  foreach ($edit['rids'] as $rid) {
-    db_query("INSERT INTO {tinymce_role} (name, rid) VALUES ('%s', %d)", $edit['name'], $rid);
+  db_query("INSERT INTO {tinymce_settings} (name, settings) VALUES ('%s', '%s')", $edit['name'], serialize($edit));
+  foreach ($edit['rids'] as $rid => $value) {
+    //if this rid has been checked, insert it
+    if ($value == 1) {
+      db_query("INSERT INTO {tinymce_role} (name, rid) VALUES ('%s', %d)", $edit['name'], $rid);
+    }
   }
 }
 
