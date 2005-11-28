@@ -505,6 +505,10 @@ function tinymce_config($profile) {
             }
           }
         }
+        // Some advanced plugins only have an $rname and no buttons
+        if ($settings['buttons'][$rname]) {
+          if (!in_array($rname, $plugin_tracker)) $plugin_tracker[] = $rname;
+        }
       }
 
       // Add the rest of the TinyMCE config options to the $init array for each button.
@@ -512,7 +516,12 @@ function tinymce_config($profile) {
         foreach ($plugin_tracker as $pname) {
           if ($pname != 'default') $init['plugins'][] = $pname;
           foreach ($plugins[$pname] as $mce_key => $mce_value) {
-            if (!strstr($mce_key, 'theme_advanced_buttons')) {
+            // Don't overwrite buttons or extended_valid_elements
+            if ($mce_key == 'extended_valid_elements') {
+              // $mce_value is an array for extended_valid_elements so just grab the first element in the array (never more than one)
+              $init[$mce_key][] = $mce_value[0];
+            }
+            else if (!strstr($mce_key, 'theme_advanced_buttons')) {
               $init[$mce_key] = $mce_value;
             }
           }
@@ -608,7 +617,7 @@ function tinymce_profile_form($edit) {
   $form['basic']['access'] = array('#type' => 'radios', '#title' => t('Make tinymce visible on'), '#default_value' => $edit->settings['access'], '#options' => array(t('all pages'), t('specific pages')));
   $form['basic']['access_pages'] = array('#type' => 'textarea', '#title' => t('Specific pages'), '#default_value' => $edit->settings['access_pages'] ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages'), '#cols' => 40, '#rows' => 5, '#description' => t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are '<em>blog</em>' for the blog page and '<em>blog/*</em>' for every personal blog. '<em>&lt;front&gt;</em>' is the front page."));
 
-  $form['buttons'] = array('#type' => 'fieldset', '#title' => t('Buttons'), '#collapsible' => TRUE, '#collapsed' => TRUE, '#tree' => TRUE, '#theme' => 'tinymce_profile_form_buttons');
+  $form['buttons'] = array('#type' => 'fieldset', '#title' => t('Buttons &amp; Plugins'), '#collapsible' => TRUE, '#collapsed' => TRUE, '#tree' => TRUE, '#theme' => 'tinymce_profile_form_buttons');
   
   $metadata = _tinymce_get_buttons(FALSE);
   // Generate the button list.

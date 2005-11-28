@@ -22,10 +22,10 @@ function _tinymce_plugins() {
 
 $plugins['advhr'] = array();
 $plugins['advhr']['theme_advanced_buttons3']  = array('advhr');
-$plugins['advhr']['extended_valid_elements']      = array('hr[class|width|size|noshade]');
+$plugins['advhr']['extended_valid_elements']  = array('hr[class|width|size|noshade]');
 
 $plugins['advimage'] = array();
-$plugins['advimg']['extended_valid_elements'] = array('img[class|src|border=0|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name]');
+$plugins['advimage']['extended_valid_elements'] = array('img[class|src|border=0|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name]');
 
 $plugins['advlink'] = array();
 $plugins['advlink']['extended_valid_elements'] = array('a[name|href|target|title|onclick]');
@@ -51,7 +51,7 @@ $plugins['flash']['extended_valid_elements'] = array('img[class|src|border=0|alt
 // Note this isn't a true plugin, rather it's buttons made available by the advanced theme.
 $plugins['font'] = array();
 $plugins['font']['theme_advanced_buttons1'] = array('fontselect', 'fontsizeselect');
-$plugins['font']['extended_valid_elements']     = array('font[face|size|color|style],span[class|align|style]');
+$plugins['font']['extended_valid_elements'] = array('font[face|size|color|style],span[class|align|style]');
 
 $plugins['fullscreen'] = array();
 $plugins['fullscreen']['theme_advanced_buttons3'] = array('fullscreen');
