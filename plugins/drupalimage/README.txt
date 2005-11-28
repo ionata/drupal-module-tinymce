@@ -10,15 +10,7 @@ About:
 
 Installation instructions:
   * Copy the drupalimage directory to the plugins directory of TinyMCE (/jscripts/tiny_mce/plugins).
-  * Add plugin to TinyMCE plugin option list example: plugins : "drupalimage".
-    The advanced theme already has done this step.
-  * Add this "a[name|href|target|title|onclick]" to extended_valid_elements option.
-    The advanced theme already has done this step.
+  * Open up plugin_reg.php and add the following lines to end of that file:        $plugins['drupalimage'] = array();
+      $plugins['drupalimage']['theme_advanced_buttons2'] = array('drupalimage');
+      $plugins['drupalimage']['extended_valid_elements'] = array('a[name|href|target|title|onclick]');        * Then enable this plugin under Admin > Settings > TinyMCE, under the Buttons & Plugins section
 
-Initialization example:
-  tinyMCE.init({
-    theme : "advanced",
-    mode : "textareas",
-    plugins : "preview",
-    extended_valid_elements : "a[name|href|target|title|onclick]"
-  });
