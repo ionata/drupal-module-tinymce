@@ -20,7 +20,7 @@ INSTALLATION:
 
 2. Download TinyMCE 2.0 from
 
-     http://prdownloads.sourceforge.net/tinymce/tinymce_2_0RC1.zip?download
+     http://tinymce.moxiecode.com/
 
    Remember to uncompress the file and make sure the folder is named
    'tinymce'.
