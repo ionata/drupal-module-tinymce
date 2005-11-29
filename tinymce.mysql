@@ -1,12 +1,11 @@
-
 --
 -- Table structure for table `tinymce_settings`
 --
 
 CREATE TABLE tinymce_settings (
   name varchar(128) NOT NULL default '',
-  settings text NOT NULL,
-  PRIMARY KEY  (name)
+  settings text NOT NULL default '',
+  PRIMARY KEY (name)
 ) TYPE=MyISAM;
 
 --
@@ -16,5 +15,5 @@ CREATE TABLE tinymce_settings (
 CREATE TABLE tinymce_role (
   name varchar(128) NOT NULL default '',
   rid tinyint(3) unsigned NOT NULL default '0',
-  UNIQUE KEY name (name,rid)
+  PRIMARY KEY (name,rid)
 ) TYPE=MyISAM;
