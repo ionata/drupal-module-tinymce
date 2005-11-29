@@ -288,9 +288,11 @@ function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
     case 'caption': // signature
     case 'pages':
     case 'access_pages': //TinyMCE profile settings.
-    case 'user_mail_welcome_body':
-    case 'user_mail_approval_body':
-    case 'user_mail_pass_body':
+    case 'user_mail_welcome_body': // user config settings
+    case 'user_mail_approval_body': // user config settings
+    case 'user_mail_pass_body': // user config settings
+    case 'synonyms': // taxonomy terms
+    case 'description': // taxonomy terms
       unset($init);
       break;
 
