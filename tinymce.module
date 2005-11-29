@@ -500,7 +500,8 @@ function tinymce_config($profile) {
         foreach ($rplugin as $mce_key => $mce_value) { // TinyMCE key
           foreach ($mce_value as $k => $v) { // Buttons
             if ($settings['buttons'][$rname . '-' . $v]) {
-              if (!in_array($rname, $plugin_tracker)) $plugin_tracker[] = $rname;
+              // Font isn't a true plugin, rather it's buttons made available by the advanced theme
+              if (!in_array($rname, $plugin_tracker) && $rname != 'font') $plugin_tracker[] = $rname;
               $init[$mce_key][] = $v;
             }
           }
