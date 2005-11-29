@@ -30,13 +30,15 @@ $plugins['advimage']['extended_valid_elements'] = array('img[class|src|border=0|
 $plugins['advlink'] = array();
 $plugins['advlink']['extended_valid_elements'] = array('a[name|href|target|title|onclick]');
 
+$plugins['autosave'] = array();
+
+$plugins['contextmenu'] = array();
+
 // Note this isn't a true plugin, rather it's buttons made available by the advanced theme.
 $plugins['default'] = array();
 $plugins['default']['theme_advanced_buttons1'] = array('bold', 'italic', 'underline', 'strikethrough', 'justifyleft', 'justifycenter', 'justifyright', 'justifyfull', 'bullist', 'numlist', 'outdent', 'indent', 'undo', 'redo', 'link', 'unlink', 'anchor');
 $plugins['default']['theme_advanced_buttons2'] = array('image', 'cleanup', 'forecolor', 'backcolor', 'sup', 'sub', 'code', 'hr');
 $plugins['default']['theme_advanced_buttons3'] = array('cut', 'copy', 'paste', 'visualaid', 'removeformat', 'charmap', 'help');
-
-$plugins['contextmenu'] = array();
 
 $plugins['directionality'] = array();
 $plugins['directionality']['theme_advanced_buttons3'] = array('ltr', 'rtl');
@@ -59,10 +61,15 @@ $plugins['fullscreen']['theme_advanced_buttons3'] = array('fullscreen');
 $plugins['iespell'] = array();
 $plugins['iespell']['theme_advanced_buttons3'] = array('iespell');
 
+$plugins['inlinepopups'] = array();
+
 $plugins['insertdatetime'] = array();
-$plugins['insertdatetime']['theme_advanced_buttons2']  = array('insertdate', 'inserttime');
+$plugins['insertdatetime']['theme_advanced_buttons2'] = array('insertdate', 'inserttime');
 $plugins['insertdatetime']['plugin_insertdate_dateFormat'] = array('%Y-%m-%d');
 $plugins['insertdatetime']['plugin_insertdate_timeFormat'] = array('%H:%M:%S');
+
+$plugins['paste'] = array();
+$plugins['paste']['theme_advanced_buttons3'] = array('pastetext', 'pasteword', 'selectall');
 
 $plugins['preview'] = array();
 $plugins['preview']['theme_advanced_buttons2'] = array('preview');
@@ -78,8 +85,6 @@ $plugins['table']['theme_advanced_buttons3'] = array('tablecontrols');
 
 $plugins['zoom'] = array();
 $plugins['zoom']['theme_advanced_buttons2'] = array('zoom');
-
-
 
 return $plugins;
 }
