@@ -283,10 +283,14 @@ function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
   switch ($textarea_name) {
     // Disable tinymce for these textareas
     case 'log': // Book log
+    case 'message': // Page log
     case 'img_assist_pages':
     case 'caption': // signature
     case 'pages':
     case 'access_pages': //TinyMCE profile settings.
+    case 'user_mail_welcome_body':
+    case 'user_mail_approval_body':
+    case 'user_mail_pass_body':
       unset($init);
       break;
 
@@ -295,6 +299,10 @@ function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
     case 'site_mission':
     case 'site_footer':
     case 'access_pages':
+    case 'site_offline_message':
+    case 'page_help':
+    case 'user_registration_help':
+    case 'user_picture_guidelines':
       $init['theme'] = 'simple';
       foreach ($init as $k => $v) {
         if (strstr($k, 'theme_advanced_')) unset($init[$k]);
