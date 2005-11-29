@@ -26,12 +26,22 @@ function tinymce_menu($may_cache) {
  */
 function tinymce_help($section) {
   switch ($section) {
+    case 'admin/help#tinymce':
+      $output = '<p>'. t('The TinyMCE module adds what-you-see-is-what-you-get (WYSIWYG) html editing to text areas.   This enables users to create rich content easily.') .'</p>';
+      $output .= '<p>'. t('TinyMCE profiles can be based on user roles. It can define which pages receive this TinyMCE capability, what buttons or themes are enabled for the editor, how the editor is displayed, and a few other editor functions. The default profile setting uses the "simple" TinyMCE theme which just shows the most minimal button set (bold, italic, underline, etc), but many other settings are available by switching to "advanced". And by default, textareas on affected pages will be automatically swapped out with the rich text editor. Users may disable the editor for any textarea without reloading the page. This setting can be reversed so that pages load with conventional textarea form fields. A link below each textarea allows TinyMCE to be turned on or off <em>on the fly</em>.') .'</p>';
+      $output .= '<p>'. t('If a user is a member of roles defined in multiple profiles, they will receive the profile with the lowest role id they belong to.') .'</p>';
+      $output .= t('<p>You can</p>
+<ul>
+<li>administer roles at <a href="%admin-access-roles">administer &gt;&gt; access control &gt;&gt; roles</a>.</li>
+<li>change user TinyMCE account settings, at <a href="%admin-user-edit">administer &gt;&gt; user  &gt;&gt; edit</a>.</li>
+<li>administer TinyMCE at <a href="%admin-settings-tinymce">administer &gt;&gt; settings &gt;&gt; tinymce</a>.</li>
+', array('%admin-access-roles' => url('admin/access/roles'), '%admin-user-edit' => url('admin/user/edit'), '%admin-settings-tinymce' => url('admin/settings/tinymce'))) .'</ul>';
+      $output .= '<p>'. t('For more information please read the configuration and customization handbook <a href="%tinymce">TinyMCE page</a>.', array('%tinymce' => 'http://www.drupal.org/handbook/modules/tinymce/')) .'</p>';
+      return $output;
     case 'admin/modules#description':
       return t('The TinyMCE Javascript HTML WYSIWYG editor.');
-
     case 'admin/settings/tinymce#pages':
       return "node/*\nuser/*\ncomment/*";
-
     case 'admin/settings/tinymce':
       return t('<p>TinyMCE adds what-you-see-is-what-you-get (WYSIWYG) html editing to textareas. Profiles can be defined based on user roles. TinyMCE profile can define which pages receive this TinyMCE capability, what buttons or themes are enabled for the editor, how the editor is displayed, and a few other editor functions. The default profile setting uses the "simple" TinyMCE theme which just shows the most minimal buttons set (bold, italic, underline, etc), but many other settings are available by switching to "advanced". And by default, textareas on affected pages will be automatically swapped out with the rich text editor. Users may disable the editor for any textarea without reloading the page. This setting can be reversed so that pages load with conventional textarea form fields. A link below each textarea allows TinyMCE to be turned on or off "on the fly".</p><p>Be aware that things can get confusing if a user is a member of roles defined in multiple profiles. In this case, the user will receive the profile for role with lowest role id they belong to. Did I mention it was confusing?</p><p>lastly, only users with the <code>access tinymce</code> permission will be able to use TinyMCE.</p>');
   }
