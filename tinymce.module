@@ -310,7 +310,6 @@ function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
     case 'signature':
     case 'site_mission':
     case 'site_footer':
-    case 'access_pages':
     case 'site_offline_message':
     case 'page_help':
     case 'user_registration_help':
@@ -636,13 +635,14 @@ function tinymce_profile_form($edit) {
   $form['basic']['name'] = array('#type' => 'textfield', '#title' => t('Profile name'), '#default_value' => $edit->name, '#size' => 40, '#maxlength' => 128, '#description' => t('Enter a unique name for this profile. This name is only visible in the tinymce administration page.'), '#required' => TRUE);
   $form['basic']['rids'] = array('#type' => 'checkboxes', '#title' => t('Roles allowed to use this profile'), '#default_value' => array_keys((array) $edit->rids), '#options' => $roles, '#description' =>  t('Select at least one role. Listed are the roles with \'access tinymce\' permission.'), '#required' => TRUE);
   $form['basic']['theme'] = array('#type' => 'hidden', '#value' => $edit->settings['theme'] ? $edit->settings['theme'] : 'advanced');
-  $form['basic']['access'] = array('#type' => 'radios', '#title' => t('Make tinymce visible on'), '#default_value' => $edit->settings['access'], '#options' => array(t('all pages'), t('specific pages')));
-  $form['basic']['access_pages'] = array('#type' => 'textarea', '#title' => t('Specific pages'), '#default_value' => $edit->settings['access_pages'] ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages'), '#cols' => 40, '#rows' => 5, '#description' => t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are '<em>blog</em>' for the blog page and '<em>blog/*</em>' for every personal blog. '<em>&lt;front&gt;</em>' is the front page."));
-
   $languages = drupal_map_assoc(array('ar', 'ca', 'cs', 'cy', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'fr_ca', 'he', 'hu', 'is', 'it', 'ja', 'ko', 'nb', 'nl', 'nn', 'pl', 'pt', 'pt_br', 'ru', 'ru_KOI8-R', 'ru_UTF-8', 'sk', 'sv', 'th', 'zh_cn', 'zh_tw', 'zh_tw_utf8'));
   $form['basic']['language'] = array('#type' => 'select', '#title' => t('Language'), '#default_value' => $edit->settings['language'] ? $edit->settings['language'] : 'en', '#options' => $languages, '#description' => t('Select the default language for this role. Language codes based on the <a href="http://www.loc.gov/standards/iso639-2/englangn.html">ISO-639-2</a> format.'));
+
+  $form['visibility'] = array('#type' => 'fieldset', '#title' => t('Visibility'), '#collapsible' => TRUE, '#collapsed' => TRUE);
+  $form['visibility']['access'] = array('#type' => 'radios', '#title' => t('Show tinymce on specific pages'), '#default_value' => isset($edit->settings['access']) ? $edit->settings['access'] : 1, '#options' => array(t('Show on every page except the listed pages.'), t('Show on only the listed pages.'), t('Show if the following PHP code returns <code>TRUE</code> (PHP-mode, experts only).')));
+  $form['visibility']['access_pages'] = array('#type' => 'textarea', '#title' => t('Pages'), '#default_value' => isset($edit->settings['access_pages']) ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages'), '#description' => t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are '%blog' for the blog page and %blog-wildcard for every personal blog. %front is the front page. If the PHP-mode is chosen, enter PHP code between %php.  Note that executing incorrect PHP-code can break your Drupal site.", array('%blog' => theme('placeholder', 'blog'), '%blog-wildcard' =>  theme('placeholder', 'blog/*'), '%front' => theme('placeholder', '<front>'), '%php' => theme('placeholder', '<?php ?>'))));
   
-  $form['buttons'] = array('#type' => 'fieldset', '#title' => t('Buttons &amp; Plugins'), '#collapsible' => TRUE, '#collapsed' => TRUE, '#tree' => TRUE, '#theme' => 'tinymce_profile_form_buttons');
+  $form['buttons'] = array('#type' => 'fieldset', '#title' => t('Buttons and plugins'), '#collapsible' => TRUE, '#collapsed' => TRUE, '#tree' => TRUE, '#theme' => 'tinymce_profile_form_buttons');
   
   $metadata = _tinymce_get_buttons(FALSE);
   // Generate the button list.
@@ -693,7 +693,7 @@ function tinymce_profile_form($edit) {
   $form['appearance']['resizing'] = array('#type' => 'select', '#title' => t('Enable resizing button'), '#default_value' => $edit->settings['resizing'], '#options' => array('false' => 'false', 'true' => 'true'), '#description' => t(' This option gives you the ability to enable/disable the resizing button.'));
   $form['appearance']['block_formats'] = array('#type' => 'textfield', '#title' => t('Block formats'), '#default_value' => $edit->settings['block_formats'] ? $edit->settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6', '#size' => 40, '#maxlength' => 250, '#description' => t('Comma separated list of HTML block formats. You can only remove elements, not add.'));
  
-  $form['output'] = array('#type' => 'fieldset', '#title' => t('Cleanup/Output'), '#collapsible' => TRUE, '#collapsed' => TRUE);
+  $form['output'] = array('#type' => 'fieldset', '#title' => t('Cleanup and output'), '#collapsible' => TRUE, '#collapsed' => TRUE);
   $form['output']['verify_html'] = array('#type' => 'select', '#title' => t('Verify HTML'), '#default_value' => $edit->settings['verify_html'], '#options' => array('true' => 'true', 'false' => 'false'), '#description' => t('Should the HTML contents be verified or not? Verifying will strip &lt;head&gt tags, so choose false if you will be editing full page HTML.'));
   $form['output']['preformatted'] = array('#type' => 'select', '#title' => t('Preformatted'), '#default_value' => $edit->settings['preformatted'], '#options' => array('false' => 'false', 'true' => 'true'), '#description' => t('If this option is set to true, the editor will insert TAB characters on tab and preserve other whitespace characters just like a PRE HTML element does.'));
   $form['output']['convert_fonts_to_styles'] = array('#type' => 'select', '#title' => t('Convert &lt;font&gt; tags to styles'), '#default_value' => $edit->settings['convert_fonts_to_styles'], '#options' => array('true' => 'true', 'false' => 'false'), '#description' => t('If you set this option to true, font size, font family, font color and font background color will be replaced by inline styles.'));
@@ -838,6 +838,8 @@ function tinymce_profile_validate($edit) {
  *   TRUE if can render, FALSE if not allowed.
  */
 function _tinymce_page_match($edit) {
+  $page_match = FALSE;
+
   //Kill TinyMCE if we're editing a textarea with PHP in it!
   if ($_POST['edit']['format'] == 2) {
     return FALSE;
@@ -852,18 +854,22 @@ function _tinymce_page_match($edit) {
     }
   }
 
-  if ($edit->settings['access'] == 0) {
-    return TRUE;
-  }
-  else {
-    $page_match = FALSE;
-    $pages = $edit->settings['access_pages'] ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages');
-    if ($pages) {
+  if ($edit->settings['access_pages']) {
+    // If the PHP option wasn't selected
+    if ($edit->settings['access'] < 2) {
       $path = drupal_get_path_alias($_GET['q']);
-      $regexp = '/^('. preg_replace(array('/(\r\n?|\n)/', '/\\\\\*/', '/(^|\|)\\\\<front\\\\>($|\|)/'), array('|', '.*', '\1'. variable_get('site_frontpage', 'node') .'\2'), preg_quote($pages, '/')) .')$/';
-      $page_match = preg_match($regexp, $path);
+      $regexp = '/^('. preg_replace(array('/(\r\n?|\n)/', '/\\\\\*/', '/(^|\|)\\\\<front\\\\>($|\|)/'), array('|', '.*', '\1'. preg_quote(variable_get('site_frontpage', 'node'), '/') .'\2'), preg_quote($edit->settings['access_pages'], '/')) .')$/';
+      $page_match = !($edit->settings['access'] xor preg_match($regexp, $path));
     }
-    return $page_match;
+    else {
+      $page_match = drupal_eval($edit->settings['access_pages']);
+    }
   }
+  // No pages were specified to block so show on all
+  else {
+    $page_match = TRUE;
+  }
+  
+  return $page_match;
 }
 ?>
