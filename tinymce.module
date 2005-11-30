@@ -577,7 +577,7 @@ function tinymce_config($profile) {
     }
   }
 
-  if ($edit['css_classes']) $init['theme_advanced_styles'] = $settings['css_classes'];
+  if ($settings['css_classes']) $init['theme_advanced_styles'] = $settings['css_classes'];
 
   if ($settings['css_setting'] == 'theme') {
     $css = $themepath . 'style.css';
