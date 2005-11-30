@@ -497,6 +497,7 @@ function tinymce_config($profile) {
   $init['mode']               = $status == 1 ? 'exact' : 'none';
   $init['theme']              = $settings['theme'] ? $settings['theme'] : 'simple';
   $init['document_base_url']  = "$base_url/";
+  $init['language']           = $settings['language'] ? $settings['language'] : 'en';
 
   $init['verify_html']        = $settings['verify_html'] ? $settings['verify_html'] : 'false';
   $init['preformatted']       = $settings['preformatted'] ? $settings['preformatted'] : 'false';
@@ -638,6 +639,9 @@ function tinymce_profile_form($edit) {
   $form['basic']['access'] = array('#type' => 'radios', '#title' => t('Make tinymce visible on'), '#default_value' => $edit->settings['access'], '#options' => array(t('all pages'), t('specific pages')));
   $form['basic']['access_pages'] = array('#type' => 'textarea', '#title' => t('Specific pages'), '#default_value' => $edit->settings['access_pages'] ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages'), '#cols' => 40, '#rows' => 5, '#description' => t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths are '<em>blog</em>' for the blog page and '<em>blog/*</em>' for every personal blog. '<em>&lt;front&gt;</em>' is the front page."));
 
+  $languages = drupal_map_assoc(array('ar', 'ca', 'cs', 'cy', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'fr_ca', 'he', 'hu', 'is', 'it', 'ja', 'ko', 'nb', 'nl', 'nn', 'pl', 'pt', 'pt_br', 'ru', 'ru_KOI8-R', 'ru_UTF-8', 'sk', 'sv', 'th', 'zh_cn', 'zh_tw', 'zh_tw_utf8'));
+  $form['basic']['language'] = array('#type' => 'select', '#title' => t('Language'), '#default_value' => $edit->settings['language'] ? $edit->settings['language'] : 'en', '#options' => $languages, '#description' => t('Select the default language for this role. Language codes based on the <a href="http://www.loc.gov/standards/iso639-2/englangn.html">ISO-639-2</a> format.'));
+  
   $form['buttons'] = array('#type' => 'fieldset', '#title' => t('Buttons &amp; Plugins'), '#collapsible' => TRUE, '#collapsed' => TRUE, '#tree' => TRUE, '#theme' => 'tinymce_profile_form_buttons');
   
   $metadata = _tinymce_get_buttons(FALSE);
