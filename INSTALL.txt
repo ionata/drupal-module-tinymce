@@ -160,8 +160,7 @@ Put the following function in your themes template.php file:
 function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
   switch ($textarea_name) {
     // Disable tinymce for these textareas
-    case 'log': // Book log
-    case 'message': // Page log
+    case 'message': // Book, Page, Story log
     case 'img_assist_pages':
     case 'caption': // signature
     case 'pages':
