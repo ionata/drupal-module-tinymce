@@ -27,7 +27,7 @@ INSTALLATION:
    'tinymce'.
 
 3. Place the entire 'tinymce' engine folder inside your modules/tinymce
-   directory.
+   directory. So the TinyMCE engine will live in modules/tinymce/tinymce
 
 4. Load the database definition file (tinymce.mysql) using the
    tool of your choice (e.g. phpmyadmin). For mysql and command line
@@ -46,12 +46,16 @@ INSTALLATION:
 
      administer > settings > tinymce
 
-6. Optionally download the "TinyMCE compressor" from
+6. To boost the performance of TinyMCE, download the 
+   "TinyMCE compressor" from
 
    http://tinymce.moxiecode.com/download.php
 
-   And follow the instructions that come with that package.
+   Place the tiny_mce_gzip.php file in 
+   
+     modules/tinymce/tinymce/jscripts/tiny_mce
 
+   
 Create new content as a role that has TinyMCE permissions and see TinyMCE in
 action!
 

@@ -106,7 +106,12 @@ function tinymce_img_assist_on_submit() {
  * Implementation of hook_elements().
  */
 function tinymce_elements() {
-  $type['textarea'] = array('#process' => 'tinymce_process_textarea');
+  $type = array();
+
+  if (user_access('access tinymce')) {
+    $type['textarea'] = array('#process' => array('tinymce_process_textarea' => array()));
+  }
+
   return $type;
 }
 
@@ -115,8 +120,6 @@ function tinymce_elements() {
  */
 function tinymce_process_textarea($element) {
   static $is_running = FALSE;
-  if (!user_access('access tinymce')) return NULL;
-
   global $user;
   global $base_url;
   static $profile_name;
@@ -633,6 +636,8 @@ function tinymce_profile_form($edit) {
   $form['basic'] = array('#type' => 'fieldset', '#title' => t('Basic setup'), '#collapsible' => TRUE, '#collapsed' => TRUE);
   $form['basic']['name'] = array('#type' => 'textfield', '#title' => t('Profile name'), '#default_value' => $edit->name, '#size' => 40, '#maxlength' => 128, '#description' => t('Enter a unique name for this profile. This name is only visible in the tinymce administration page.'), '#required' => TRUE);
   $form['basic']['rids'] = array('#type' => 'checkboxes', '#title' => t('Roles allowed to use this profile'), '#default_value' => array_keys((array) $edit->rids), '#options' => $roles, '#description' =>  t('Select at least one role. Listed are the roles with \'access tinymce\' permission.'), '#required' => TRUE);
+  // This line upgrades previous versions of TinyMCE for user who previously selected the default theme.
+  $edit->settings['theme'] = $edit->settings['theme'] == 'default' ? 'advanced' : $edit->settings['theme'];
   $form['basic']['theme'] = array('#type' => 'hidden', '#value' => $edit->settings['theme'] ? $edit->settings['theme'] : 'advanced');
   $languages = drupal_map_assoc(array('ar', 'ca', 'cs', 'cy', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'fr_ca', 'he', 'hu', 'is', 'it', 'ja', 'ko', 'nb', 'nl', 'nn', 'pl', 'pt', 'pt_br', 'ru', 'ru_KOI8-R', 'ru_UTF-8', 'sk', 'sv', 'th', 'zh_cn', 'zh_tw', 'zh_tw_utf8'));
   $form['basic']['language'] = array('#type' => 'select', '#title' => t('Language'), '#default_value' => $edit->settings['language'] ? $edit->settings['language'] : 'en', '#options' => $languages, '#description' => t('Select the default language for this role. Language codes based on the <a href="http://www.loc.gov/standards/iso639-2/englangn.html">ISO-639-2</a> format.'));
