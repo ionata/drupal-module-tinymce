@@ -495,8 +495,8 @@ function tinymce_config($profile) {
     $init['plugins'] = array();
     $init['theme_advanced_toolbar_location']  = $settings['toolbar_loc'] ? $settings['toolbar_loc'] : 'bottom';
     $init['theme_advanced_toolbar_align']     = $settings['toolbar_align'] ? $settings['toolbar_align'] : 'left';
-    $init['theme_advanced_path_location']     = $settings['path_loc'] ? $settings['path_loc'] : 'none';
-    $init['theme_advanced_resizing']          = $settings['resizing'] ? $settings['resizing'] : 'false';
+    $init['theme_advanced_path_location']     = $settings['path_loc'] ? $settings['path_loc'] : 'bottom';
+    $init['theme_advanced_resizing']          = $settings['resizing'] ? $settings['resizing'] : 'true';
     $init['theme_advanced_blockformats']      = $settings['block_formats'] ? $settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6';
 
     if (is_array($settings['buttons'])) {
@@ -694,7 +694,7 @@ function tinymce_profile_form($edit) {
   $form['appearance']['toolbar_loc'] = array('#type' => 'select', '#title' => t('Toolbar location'), '#default_value' => $edit->settings['toolbar_loc'], '#options' => array('bottom' => 'bottom', 'top' => 'top'), '#description' => t('Show toolbar at the top or bottom of the editor area?'));
   $form['appearance']['toolbar_align'] = array('#type' => 'select', '#title' => t('Toolbar alignment'), '#default_value' => $edit->settings['toolbar_align'], '#options' => array('center' => 'center', 'left' => 'left', 'right' => 'right'), '#description' => t('Align tool icons left, center, or right within the toolbar.'));
   $form['appearance']['path_loc'] = array('#type' => 'select', '#title' => t('Path location'), '#default_value' => $edit->settings['path_loc'], '#options' => array('none' => 'none', 'top' => 'top', 'bottom' => 'bottom'), '#description' => t('Path to html elements (i.e. "body>table>tr>td"). Show at top, bottom, or not at all.'));
-  $form['appearance']['resizing'] = array('#type' => 'select', '#title' => t('Enable resizing button'), '#default_value' => $edit->settings['resizing'], '#options' => array('false' => 'false', 'true' => 'true'), '#description' => t(' This option gives you the ability to enable/disable the resizing button.'));
+  $form['appearance']['resizing'] = array('#type' => 'select', '#title' => t('Enable resizing button'), '#default_value' => $edit->settings['resizing'], '#options' => array('false' => 'false', 'true' => 'true'), '#description' => t(' This option gives you the ability to enable/disable the resizing button. If enabled the <strong>Path location toolbar</strong> must be set to "top" or "bottom" in order to display the resize icon.'));
   $form['appearance']['block_formats'] = array('#type' => 'textfield', '#title' => t('Block formats'), '#default_value' => $edit->settings['block_formats'] ? $edit->settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6', '#size' => 40, '#maxlength' => 250, '#description' => t('Comma separated list of HTML block formats. You can only remove elements, not add.'));
  
   $form['output'] = array('#type' => 'fieldset', '#title' => t('Cleanup and output'), '#collapsible' => TRUE, '#collapsed' => TRUE);
