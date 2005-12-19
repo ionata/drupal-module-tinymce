@@ -46,6 +46,8 @@ $plugins['directionality']['theme_advanced_buttons3'] = array('ltr', 'rtl');
 $plugins['emotions'] = array();
 $plugins['emotions']['theme_advanced_buttons3'] = array('emotions');
 
+$plugins['filemanager'] = array();
+
 $plugins['flash'] = array();
 $plugins['flash']['theme_advanced_buttons3'] = array('flash');
 $plugins['flash']['extended_valid_elements'] = array('img[class|src|border=0|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name|obj|param|embed]');
@@ -60,6 +62,8 @@ $plugins['fullscreen']['theme_advanced_buttons3'] = array('fullscreen');
 
 $plugins['iespell'] = array();
 $plugins['iespell']['theme_advanced_buttons3'] = array('iespell');
+
+$plugins['imagemanager'] = array();
 
 $plugins['inlinepopups'] = array();
 
