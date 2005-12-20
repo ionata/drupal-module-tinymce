@@ -283,7 +283,7 @@ function tinymce_user($type, &$edit, &$user, $category = NULL) {
 function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
   switch ($textarea_name) {
     // Disable tinymce for these textareas
-    case 'message': // Book, Page, Story log
+    case 'log': // book and page log
     case 'img_assist_pages':
     case 'caption': // signature
     case 'pages':
