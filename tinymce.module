@@ -52,7 +52,7 @@ function tinymce_img_assist_head() {
   $img_assist_prop = $img_template = '';
   if (module_exist('img_assist')) {
     $img_assist_prop = $base_url .'/'. drupal_get_path('module', 'img_assist'). '/properties.js';
-    $img_assist_prop = '<script language="javascript" src="'. $img_assist_prop .'"></script>';
+    $img_assist_prop = '<script type="text/javascript" src="'. $img_assist_prop .'"></script>';
 
     $img_template = variable_get('img_assist_img_html', img_assist_help('img_assist/template'));
     $nl = "\n";
@@ -62,7 +62,7 @@ function tinymce_img_assist_head() {
 
 $output = <<<EOD
 $img_assist_prop
-<script language="javascript">
+<script type="text/javascript">
   var clean_url    = $clean_url;
   var img_template = '$img_template';
 
@@ -155,7 +155,7 @@ function tinymce_process_textarea($element) {
     $disable = t('disable rich-text');
 
 $tinymce_invoke = <<<EOD
-<script language="javascript" type="text/javascript">
+<script type="text/javascript">
   tinyMCE.init({
     $tinymce_settings
   });
@@ -163,7 +163,7 @@ $tinymce_invoke = <<<EOD
 EOD;
 
 $js_toggle = <<<EOD
-<script language="javascript" type="text/javascript">
+<script type="text/javascript">
   function mceToggle(id, linkid) {
     element = document.getElementById(id);
     link = document.getElementById(linkid);
@@ -195,17 +195,17 @@ $status = isset($user->tinymce_status) ? $user->tinymce_status : variable_get('t
 $link_text = $status == 1 ? $disable : $enable;
 $no_wysiwyg = t('Your current web browser does not support WYSIWYG editing.');
 $wysiwyg_link = <<<EOD
-<script language="javascript" type="text/javascript">
+<script type="text/javascript">
   img_assist = document.getElementById('img_assist-link-edit-$textarea_name');
   if (img_assist) {
     img_assist.href = tinyMCE.getEditorId('edit-$textarea_name') == null ? "$img_assist_on" : "$img_assist_off";
   }
   if (typeof(document.execCommand) == 'undefined') {
     img_assist.href = "$img_assist_off";
-    document.write('<div style="font-size:x-small">$no_wysiwyg<\\/div>');
+    document.write('<div style="font-size:x-small">$no_wysiwyg</div>');
   }
   else {
-    document.write("<div><a href=\"javascript:mceToggle('edit-$textarea_name', 'wysiwyg4$textarea_name');\" id=\"wysiwyg4$textarea_name\">$link_text<\\/div><\\/a>");
+    document.write("<div><a href=\"javascript:mceToggle('edit-$textarea_name', 'wysiwyg4$textarea_name');\" id=\"wysiwyg4$textarea_name\">$link_text</a></div>");
   }
 </script>
 EOD;
