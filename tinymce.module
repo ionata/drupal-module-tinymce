@@ -97,7 +97,8 @@ function tinymce_elements() {
   $type = array();
 
   if (user_access('access tinymce')) {
-    $type['textarea'] = array('#process' => array('tinymce_process_textarea' => array()));
+    // Set resizable to false to avoid drupal.js resizable function from taking control of the textarea
+    $type['textarea'] = array('#process' => array('tinymce_process_textarea' => array()), '#resizable' => FALSE);
   }
 
   return $type;
