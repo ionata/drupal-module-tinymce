@@ -54,7 +54,7 @@ $plugins['flash']['extended_valid_elements'] = array('img[class|src|border=0|alt
 
 // Note this isn't a true plugin, rather it's buttons made available by the advanced theme.
 $plugins['font'] = array();
-$plugins['font']['theme_advanced_buttons1'] = array('fontselect', 'fontsizeselect');
+$plugins['font']['theme_advanced_buttons1'] = array('formatselect', 'fontselect', 'fontsizeselect');
 $plugins['font']['extended_valid_elements'] = array('font[face|size|color|style],span[class|align|style]');
 
 $plugins['fullscreen'] = array();
