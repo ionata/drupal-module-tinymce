@@ -16,6 +16,12 @@ Dependancies:
 
 INSTALLATION:
 ********************************************************************
+
+NOTE: During this installation process you'll be asked to also 
+      install the official TinyMCE package from 
+      tinymce.moxiecode.com.
+
+
 1. Place the entire tinymce directory into your Drupal modules/
    directory.
 
