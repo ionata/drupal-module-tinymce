@@ -220,7 +220,7 @@ EOD;
         drupal_add_js(drupal_get_path('module', 'tinymce') .'/imagemanager/jscripts/mcimagemanager.js');
       }
       // TinyMCE Compressor
-      if (file_exists($tinymce_mod_path. 'tinymce/jscripts/tiny_mce/tiny_mce_gzip.php')) {
+      if (file_exists($tinymce_mod_path. '/tinymce/jscripts/tiny_mce/tiny_mce_gzip.php')) {
         drupal_add_js($base_url. '/'. $tinymce_mod_path .'/tinymce/jscripts/tiny_mce/tiny_mce_gzip.php');
       }
       else {
