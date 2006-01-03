@@ -607,7 +607,7 @@ function tinymce_profile_delete($name) {
  * Return an HTML form for profile configuration.
  */
 function tinymce_profile_form($edit) {
-  $edit = array2object($edit);
+  $edit = (object) $edit; 
 
   // Only display the roles that currently don't have a tinymce profile. One
   // profile per role.
