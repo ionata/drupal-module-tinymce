@@ -804,10 +804,7 @@ function tinymce_profile_save($edit) {
   db_query("DELETE FROM {tinymce_role} WHERE name = '%s' or name = '%s'", $edit['name'], $edit['old_name']);
   db_query("INSERT INTO {tinymce_settings} (name, settings) VALUES ('%s', '%s')", $edit['name'], serialize($edit));
   foreach ($edit['rids'] as $rid => $value) {
-    //if this rid has been checked, insert it
-    if ($value == 1) {
-      db_query("INSERT INTO {tinymce_role} (name, rid) VALUES ('%s', %d)", $edit['name'], $rid);
-    }
+    db_query("INSERT INTO {tinymce_role} (name, rid) VALUES ('%s', %d)", $edit['name'], $rid);
   }
 }
 
