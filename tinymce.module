@@ -695,7 +695,7 @@ function tinymce_profile_form($edit) {
           $title = $b . ' &#8211; '. $title;
         }
         $form_value = $edit->settings['buttons'][$name . '-' . $button];
-        $form['buttons'][$name . '-' . $button] = array('#type' => 'checkbox', '#title' => $title, '#default_value' => $form_value, '#description' => $description);
+        $form['buttons'][$name . '-' . $button] = array('#type' => 'checkbox', '#title' => $title, '#default_value' => $form_value);
       }
     }
     else {
@@ -704,7 +704,7 @@ function tinymce_profile_form($edit) {
         $title = '<a href="'. $metadata[$name]['infourl'] .'" target="_blank">'. $title .'</a>';
       }
       $form_value = $edit->settings['buttons'][$name];
-      $form['buttons'][$name] = array('#type' => 'checkbox', '#title' => $title, '#default_value' => $form_value, '#description' => $description);
+      $form['buttons'][$name] = array('#type' => 'checkbox', '#title' => $title, '#default_value' => $form_value);
     }
   }
 
