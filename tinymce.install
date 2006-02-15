@@ -1,5 +1,19 @@
 <?php
 
+function tinymce_install() {
+  db_query("CREATE TABLE {tinymce_settings} (
+    name varchar(128) NOT NULL default '',
+    settings text NOT NULL default '',
+    PRIMARY KEY (name)
+  ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+
+  db_query("CREATE TABLE {tinymce_role} (
+    name varchar(128) NOT NULL default '',
+    rid tinyint(3) unsigned NOT NULL default '0',
+    PRIMARY KEY (name,rid)
+  ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+}
+
 function tinymce_update_1() {
   return _system_update_utf8(array('tinymce_settings', 'tinymce_role'));
 }
