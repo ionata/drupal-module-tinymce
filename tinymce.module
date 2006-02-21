@@ -900,4 +900,3 @@ function _tinymce_page_match($edit) {
 
   return $page_match;
 }
-?>

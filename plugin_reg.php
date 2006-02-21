@@ -92,4 +92,3 @@ $plugins['zoom']['theme_advanced_buttons2'] = array('zoom');
 
 return $plugins;
 }
-?>
