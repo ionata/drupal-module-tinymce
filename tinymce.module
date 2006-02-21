@@ -487,12 +487,13 @@ function tinymce_config($profile) {
 
   // Is tinymce on by default?
   $status = isset($user->tinymce_status) ? $user->tinymce_status : variable_get('tinymce_default_state', 0);
+  
   $init['mode']               = $status == 1 ? 'exact' : 'none';
   $init['theme']              = $settings['theme'] ? $settings['theme'] : 'simple';
   $init['document_base_url']  = "$base_url/";
   $init['language']           = $settings['language'] ? $settings['language'] : 'en';
   $init['safari_warning']     = variable_get('tinymce_safari_message', 0) ? 'true' : 'false';
-
+  $init['entity_encoding']    = 'raw';
   $init['verify_html']        = $settings['verify_html'] ? $settings['verify_html'] : 'false';
   $init['preformatted']       = $settings['preformatted'] ? $settings['preformatted'] : 'false';
   $init['convert_fonts_to_styles'] = $settings['convert_fonts_to_styles'] ? $settings['convert_fonts_to_styles'] : 'false';
