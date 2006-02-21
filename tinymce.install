@@ -1,18 +1,63 @@
 <?php
 // $Id$
 
+/**
+ * Implementation of hook_install()
+ *
+ * This will automatically install the database tables for the TinyMCE module for both the MySQL and PostgreSQL databases.
+ *
+ * If you are using another database, you will have to install the tables by hand, using the queries below as a reference.
+ *
+ * Note that the curly braces around table names are a drupal-specific feature to allow for automatic database table prefixing,
+ * and will need to be removed.
+ */
 function tinymce_install() {
-  db_query("CREATE TABLE {tinymce_settings} (
-    name varchar(128) NOT NULL default '',
-    settings text NOT NULL default '',
-    PRIMARY KEY (name)
-  ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+  switch ($GLOBALS['db_type']) {
+    case 'mysqli':
+    case 'mysql':
+      $query1 = db_query("CREATE TABLE IF NOT EXISTS {tinymce_settings} (
+                          name varchar(128) NOT NULL default '',
+                          settings text NOT NULL default '',
+                          PRIMARY KEY (name)
+                          ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+  
+      $query2 = db_query("CREATE TABLE IF NOT EXISTS {tinymce_role} (
+                          name varchar(128) NOT NULL default '',
+                          rid tinyint(3) unsigned NOT NULL default '0',
+                          PRIMARY KEY (name,rid)
+                          ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
 
-  db_query("CREATE TABLE {tinymce_role} (
-    name varchar(128) NOT NULL default '',
-    rid tinyint(3) unsigned NOT NULL default '0',
-    PRIMARY KEY (name,rid)
-  ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      if ($query1 && $query2) {
+        $created = TRUE;
+      }
+      break;
+      
+    case 'pgsql':
+      $query1 = db_query("CREATE TABLE {tinymce_settings} (
+                          name varchar(128) NOT NULL default '',
+                          settings text NOT NULL default '',
+                          PRIMARY KEY (name));");
+     
+      $query2 = db_query("CREATE TABLE {tinymce_role} (
+                          name varchar(128) NOT NULL default '',
+                          rid smallint NOT NULL default '0',
+                          PRIMARY KEY (name,rid));");
+   
+      if ($query1 && $query2) {
+        $created = TRUE;
+      }
+      break;
+      
+    default:
+      break;
+  }
+  
+  if ($created) {
+    drupal_set_message(t('TinyMCE module installed successfully.'));
+  }
+  else {
+    drupal_set_message(t('Table installation for the TinyMCE module was unsuccessful. The tables may need to be installed by hand. See tinymce.install file for a list of the installation queries.'), 'error');
+  }
 }
 
 function tinymce_update_1() {
