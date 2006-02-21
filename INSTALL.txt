@@ -2,9 +2,12 @@
                      D R U P A L    M O D U L E
 ********************************************************************
 Name: TinyMCE module
-Authors: Matt Westgate <drupal at asitis dot org> and
-         Richard Bennett <richard.b at gritechnologies dot com>
-         Jeff Robbins <robbins at jjeff dot com>
+
+Maintainers: Matt Westgate <drupal /at/ asitis /dot/ org> and
+             Richard Bennett <richard.b /at/ gritechnologies /dot/ com>
+             Jeff Robbins <robbins /at/ jjeff /dot/ com>
+             Theodore Serbinski <stanson /at/ gmail /dot/ com>
+         
 Dependancies:
   This module requires the third-party TinyMCE editor and a
   Javascript-enabled web browser.  Currently it is known to work
