@@ -490,7 +490,7 @@ function tinymce_config($profile) {
   
   $init['mode']               = $status == 1 ? 'exact' : 'none';
   $init['theme']              = $settings['theme'] ? $settings['theme'] : 'simple';
-  $init['document_base_url']  = "$base_url/";
+  $init['document_base_url']  = "base_path()";
   $init['language']           = $settings['language'] ? $settings['language'] : 'en';
   $init['safari_warning']     = variable_get('tinymce_safari_message', 0) ? 'true' : 'false';
   $init['entity_encoding']    = 'raw';
