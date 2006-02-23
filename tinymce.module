@@ -474,12 +474,11 @@ function tinymce_admin($arg = NULL) {
  * Return an array of initial tinymce config options from the current role.
  */
 function tinymce_config($profile) {
-
-  global $base_url;
   global $user;
+  
   // Drupal theme path.
-  $themepath = drupal_get_path('theme', init_theme()).'/';
-  $host = $base_url.'/';
+  $themepath = path_to_theme() . '/';
+  $host = base_path();
 
   $settings = $profile->settings;
 
@@ -490,13 +489,14 @@ function tinymce_config($profile) {
   
   $init['mode']               = $status == 1 ? 'exact' : 'none';
   $init['theme']              = $settings['theme'] ? $settings['theme'] : 'simple';
-  $init['document_base_url']  = "base_path()";
+  $init['document_base_url']  = "$host";
   $init['language']           = $settings['language'] ? $settings['language'] : 'en';
   $init['safari_warning']     = variable_get('tinymce_safari_message', 0) ? 'true' : 'false';
   $init['entity_encoding']    = 'raw';
   $init['verify_html']        = $settings['verify_html'] ? $settings['verify_html'] : 'false';
   $init['preformatted']       = $settings['preformatted'] ? $settings['preformatted'] : 'false';
   $init['convert_fonts_to_styles'] = $settings['convert_fonts_to_styles'] ? $settings['convert_fonts_to_styles'] : 'false';
+  
   if ($init['theme'] == 'advanced') {
     $init['plugins'] = array();
     $init['theme_advanced_toolbar_location']  = $settings['toolbar_loc'] ? $settings['toolbar_loc'] : 'bottom';
