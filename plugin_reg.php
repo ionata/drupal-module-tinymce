@@ -25,7 +25,7 @@ $plugins['advhr']['theme_advanced_buttons3']  = array('advhr');
 $plugins['advhr']['extended_valid_elements']  = array('hr[class|width|size|noshade]');
 
 $plugins['advimage'] = array();
-$plugins['advimage']['extended_valid_elements'] = array('img[class|src|border=0|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name]');
+$plugins['advimage']['extended_valid_elements'] = array('img[class|src|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name]');
 
 $plugins['advlink'] = array();
 $plugins['advlink']['extended_valid_elements'] = array('a[name|href|target|title|onclick]');
@@ -50,7 +50,7 @@ $plugins['filemanager'] = array();
 
 $plugins['flash'] = array();
 $plugins['flash']['theme_advanced_buttons3'] = array('flash');
-$plugins['flash']['extended_valid_elements'] = array('img[class|src|border=0|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name|obj|param|embed]');
+$plugins['flash']['extended_valid_elements'] = array('img[class|src|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name|obj|param|embed]');
 
 // Note this isn't a true plugin, rather it's buttons made available by the advanced theme.
 $plugins['font'] = array();
