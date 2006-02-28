@@ -310,12 +310,14 @@ function theme_tinymce_theme($init, $textarea_name, $theme_name, $is_running) {
       break;
   }
 
-  // Add some extra features when using the advanced theme.
+  /*
+  // Example, add some extra features when using the advanced theme.
   switch ($theme_name) {
     case 'advanced':
-      //$init['extended_valid_elements'] = array('a[href|target|name|title|onclick]');
+      $init['extended_valid_elements'] = array('a[href|target|name|title|onclick]');
       break;
   }
+  */
 
   // Always return $init; !!
   return $init;
