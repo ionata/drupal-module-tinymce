@@ -31,7 +31,11 @@ function tinymce_help($section) {
     case 'admin/settings/tinymce#pages':
       return "node/*\nuser/*\ncomment/*";
     case 'admin/settings/tinymce':
-      return t('<p>TinyMCE adds what-you-see-is-what-you-get (WYSIWYG) HTML editing to textareas, enabling users to create rich content.</p><p>TinyMCE Profiles are based on user roles, and defines for example, what pages receive TinyMCE capabilities, what buttons or themes are enabled for the editor, how the editor is displayed, and a few other settings. Users may disable the editor for any textarea without reloading the page. This setting can be reversed so that pages load with conventional textarea form fields. A link below each textarea allows TinyMCE to be turned on or off "on the fly".</p><p>Be aware that things can get confusing if a user is a member of a role defined in multiple profiles. In this case, the user will receive the profile for the role with the lowest role id they belong to. Did I mention it was confusing?</p><p>lastly, only users with the <code>access tinymce</code> permission will be able to use TinyMCE.</p>');
+    case 'admin/help#tinymce' :
+      return t('<p>TinyMCE adds what-you-see-is-what-you-get (WYSIWYG) html editing to textareas. This editor can be enabled/disabled without reloading the page by clicking a link below each textarea.</p>
+                <p>Profiles can be defined based on user roles. A TinyMCE profile can define which pages receive this TinyMCE capability, what buttons or themes are enabled for the editor, how the editor is displayed, and a few other editor functions.</p>
+                <p>Lastly, only users with the <code>access tinymce</code> <a href="%url">permission</a> will be able to use TinyMCE.</p>', array('%url' => 'admin/access')
+              );
   }
 }
 
