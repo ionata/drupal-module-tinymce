@@ -819,7 +819,7 @@ function tinymce_profile_overview() {
   );
   $form['settings']['submit'] = array('#type' => 'submit', '#value' => t('Save settings'));
 
-  $output .= drupal_get_form('settings', $form);
+  $output .= drupal_get_form('default_settings', $form);
 
   return $output;
 }
