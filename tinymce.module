@@ -32,7 +32,8 @@ function tinymce_help($section) {
       return "node/*\nuser/*\ncomment/*";
     case 'admin/settings/tinymce':
     case 'admin/help#tinymce' :
-      return t('<p>TinyMCE adds what-you-see-is-what-you-get (WYSIWYG) html editing to textareas. This editor can be enabled/disabled without reloading the page by clicking a link below each textarea.</p>
+      return t('<p style="font-size:x-small">$Revision$ $Date$</p>' .
+               '<p>TinyMCE adds what-you-see-is-what-you-get (WYSIWYG) html editing to textareas. This editor can be enabled/disabled without reloading the page by clicking a link below each textarea.</p>
                 <p>Profiles can be defined based on user roles. A TinyMCE profile can define which pages receive this TinyMCE capability, what buttons or themes are enabled for the editor, how the editor is displayed, and a few other editor functions.</p>
                 <p>Lastly, only users with the <code>access tinymce</code> <a href="%url">permission</a> will be able to use TinyMCE.</p>', array('%url' => 'admin/access')
               );
@@ -43,7 +44,17 @@ function tinymce_help($section) {
  * Implementation of hook_perm().
  */
 function tinymce_perm() {
-  return array('administer tinymce', 'access tinymce');
+  $array = array('administer tinymce', 'access tinymce');
+  $tinymce_mod_path = drupal_get_path('module', 'tinymce');
+  
+  if (is_dir($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/plugins/imagemanager/')) {
+    $array[] = 'access tinymce imagemanager';
+  }
+  if (is_dir($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/plugins/filemanager/')) {
+    $array[] = 'access tinymce filemanager';
+  }
+  
+  return $array;
 }
 
 /**
@@ -194,8 +205,10 @@ $js_toggle = <<<EOD
 </script>
 EOD;
 
-$status = isset($user->tinymce_status) ? $user->tinymce_status : variable_get('tinymce_default_state', 0);
-$link_text = $status == 1 ? $disable : $enable;
+$status = tinymce_user_get_status($user, $profile);
+
+// note we test for string == true because we save our settings as strings
+$link_text = $status == 'true' ? $disable : $enable;
 $no_wysiwyg = t('Your current web browser does not support WYSIWYG editing.');
 $wysiwyg_link = <<<EOD
 <script type="text/javascript">
@@ -217,10 +230,17 @@ EOD;
     if (!$is_running) {
       $is_running = TRUE;
       $tinymce_mod_path = drupal_get_path('module', 'tinymce');
-      if (is_dir($tinymce_mod_path.'/imagemanager/')) {
+      
+      if (is_dir($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/plugins/imagemanager/') && user_access('access tinymce imagemanager') ) {
         // if tinymce imagemanager is installed
-        drupal_add_js($tinymce_mod_path .'/imagemanager/jscripts/mcimagemanager.js');
+        drupal_add_js($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/plugins/imagemanager/jscripts/mcimagemanager.js');
       }
+      
+      if (is_dir($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/plugins/filemanager/') && user_access('access tinymce filemanager') ) {
+        // if tinymce filemanager is installed
+        drupal_add_js($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/plugins/filemanager/jscripts/mcfilemanager.js');
+      }
+      
       // TinyMCE Compressor
       if (file_exists($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/tiny_mce_gzip.php')) {
         drupal_add_js($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/tiny_mce_gzip.php');
@@ -248,10 +268,28 @@ EOD;
  */
 function tinymce_user($type, &$edit, &$user, $category = NULL) {
   if ($type == 'form' && $category == 'account' && user_access('access tinymce')) {
-    $user_status = $edit['tinymce_status'] != NULL ? $edit['tinymce_status'] : ($user->tinymce_status != NULL ? $user->tinymce_status : variable_get('tinymce_default_state', 0));
-    $form['tinymce'] = array('#type' => 'fieldset', '#title' => t('Rich-text settings'), '#weight' => 5, '#collapsible' => TRUE, '#collapsed' => TRUE);
-    $form['tinymce']['tinymce_status'] = array('#type' => 'radios', '#title' => t('Default status'), '#default_value' => $user_status, '#options' => array(t('Off'), t('On')), '#description' => t('Should rich-text editing be enabled or disabled by default in textarea fields?'));
-    return array('tinymce' => $form);
+    $profile = tinymce_user_get_profile($user);
+
+    // because the settings are saved as strings we need to test for the string 'true'
+    if ($profile->settings['user_choose'] == 'true') {
+      $form['tinymce'] = array(
+        '#type' => 'fieldset', 
+        '#title' => t('TinyMCE rich-text settings'), 
+        '#weight' => 10, 
+        '#collapsible' => TRUE, 
+        '#collapsed' => TRUE
+      );
+ 
+      $form['tinymce']['tinymce_status'] = array(
+        '#type' => 'select', 
+        '#title' => t('Default state'),
+        '#default_value' => isset($user->tinymce_status) ? $user->tinymce_status : (isset($profile->settings['default']) ? $profile->settings['default'] : 'false'), 
+        '#options' => array('false' => 'false', 'true' => 'true'), 
+        '#description' => t('Should rich-text editing be enabled or disabled by default in textarea fields?')
+      );    
+     
+      return array('tinymce' => $form);
+    }
   }
   if ($type == 'validate') {
     return array('tinymce_status' => $edit['tinymce_status']);
@@ -426,7 +464,7 @@ function tinymce_admin($arg = NULL) {
     case 'add':
       $breadcrumb[] = array('path' => 'admin', 'title' => t('administer'));
       $breadcrumb[] = array('path' => 'admin/settings/tinymce', 'title' => t('tinymce'));
-      $breadcrumb[] = array('path' => 'admin/settings/tinymce/add', 'title' => t('Add new tinymce profile'));
+      $breadcrumb[] = array('path' => 'admin/settings/tinymce/add', 'title' => t('Add new TinyMCE profile'));
       menu_set_location($breadcrumb);
       $output = tinymce_profile_form($edit);
       break;
@@ -446,7 +484,7 @@ function tinymce_admin($arg = NULL) {
     case t('Update profile');
       if (tinymce_profile_validate($edit)) {
         tinymce_profile_save($edit);
-        $edit['old_name'] ? drupal_set_message(t('Your tinymce profile has been updated.')) : drupal_set_message(t('Your tinymce profile has been created.'));
+        $edit['old_name'] ? drupal_set_message(t('Your TinyMCE profile has been updated.')) : drupal_set_message(t('Your TinyMCE profile has been created.'));
         drupal_goto('admin/settings/tinymce');
       }
       else {
@@ -454,15 +492,8 @@ function tinymce_admin($arg = NULL) {
       }
       break;
 
-    case t('Save settings'):
-      variable_set('tinymce_default_state', $edit['tinymce_default_state']);
-      variable_set('tinymce_safari_message', $edit['tinymce_safari_message']);
-      drupal_set_message(t('Settings updated'));
-      drupal_goto('admin/settings/tinymce');
-      break;
-
     default:
-      drupal_set_title(t('TinyMCE settings (%revision)', array('%revision' => '$Revision$')));
+      drupal_set_title(t('TinyMCE settings'));
       //Check if TinyMCE is installed.
       $tinymce_loc = drupal_get_path('module', 'tinymce') .'/tinymce/';
       if (!is_dir($tinymce_loc)) {
@@ -471,7 +502,7 @@ function tinymce_admin($arg = NULL) {
       $output = tinymce_profile_overview();
   }
 
-  print theme('page', $output);
+  return $output;
 }
 
 /**
@@ -489,19 +520,29 @@ function tinymce_config($profile) {
   // Build a default list of TinyMCE settings.
 
   // Is tinymce on by default?
-  $status = isset($user->tinymce_status) ? $user->tinymce_status : variable_get('tinymce_default_state', 0);
+  $status = tinymce_user_get_status($user, $profile);
   
-  $init['mode']               = $status == 1 ? 'exact' : 'none';
-  $init['theme']              = $settings['theme'] ? $settings['theme'] : 'simple';
+  $init['mode']               = $status == 'true' ? 'exact' : 'none';
+  $init['theme']              = $settings['theme'] ? $settings['theme'] : 'advanced';
   $init['relative_urls']      = 'false';
   $init['document_base_url']  = "$host";
   $init['language']           = $settings['language'] ? $settings['language'] : 'en';
-  $init['safari_warning']     = variable_get('tinymce_safari_message', 0) ? 'true' : 'false';
+  $init['safari_warning']     = $settings['safari_message'] ?  $settings['safari_message'] : 'false';
   $init['entity_encoding']    = 'raw';
   $init['verify_html']        = $settings['verify_html'] ? $settings['verify_html'] : 'false';
   $init['preformatted']       = $settings['preformatted'] ? $settings['preformatted'] : 'false';
   $init['convert_fonts_to_styles'] = $settings['convert_fonts_to_styles'] ? $settings['convert_fonts_to_styles'] : 'false';
-    
+
+  $tinymce_mod_path = drupal_get_path('module', 'tinymce');
+  if (is_dir($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/plugins/imagemanager/') && user_access('access tinymce imagemanager')) {
+    // we probably need more security than this
+    $init['file_browser_callback'] = "mcImageManager.filebrowserCallBack";
+  }
+  if (is_dir($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/plugins/filemanager/') && user_access('access tinymce filemanager')) {
+    // we probably need more security than this
+    $init['file_browser_callback'] = "mcImageManager.filebrowserCallBack";
+  }
+  
   if ($init['theme'] == 'advanced') {
     $init['plugins'] = array();
     $init['theme_advanced_toolbar_location']  = $settings['toolbar_loc'] ? $settings['toolbar_loc'] : 'bottom';
@@ -626,7 +667,9 @@ function tinymce_profile_form($edit) {
   if (arg(3) == 'add') {
     $result = db_query('SELECT DISTINCT(rid) FROM {tinymce_role}');
     while ($data = db_fetch_object($result)) {
-      unset($roles[$data->rid]);
+      if (!in_array($data->rid, array_keys((array) $edit->rids)) && !form_get_errors()){
+        unset($roles[$data->rid]);
+      }
     }
     if (!$orig_roles) {
       drupal_set_message(t('You must <a href="%access-control-url">assign</a> at least one role with the \'access tinymce\' permission before creating a profile.', array('%access-control-url' => url('admin/access'))), 'error');
@@ -644,23 +687,87 @@ function tinymce_profile_form($edit) {
     $btn = t('Update profile');
   }
 
-  $form['basic'] = array('#type' => 'fieldset', '#title' => t('Basic setup'), '#collapsible' => TRUE, '#collapsed' => TRUE);
-  $form['basic']['name'] = array('#type' => 'textfield', '#title' => t('Profile name'), '#default_value' => $edit->name, '#size' => 40, '#maxlength' => 128, '#description' => t('Enter a name for this profile. This name is only visible within the tinymce administration page.'), '#required' => TRUE);
-  $form['basic']['rids'] = array('#type' => 'checkboxes', '#title' => t('Roles allowed to use this profile'), '#default_value' => array_keys((array) $edit->rids), '#options' => $roles, '#description' =>  t('Check at least one role. Only roles with \'access tinymce\' permission will be shown here.'), '#required' => TRUE);
+  $form['basic'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('Basic setup'), 
+    '#collapsible' => TRUE, 
+    '#collapsed' => TRUE
+  );
+  $form['basic']['name'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Profile name'), 
+    '#default_value' => $edit->name, 
+    '#size' => 40, 
+    '#maxlength' => 128, 
+    '#description' => t('Enter a name for this profile. This name is only visible within the tinymce administration page.'), 
+    '#required' => TRUE
+  );
+  $form['basic']['rids'] = array(
+    '#type' => 'checkboxes', 
+    '#title' => t('Roles allowed to use this profile'), 
+    '#default_value' => array_keys((array) $edit->rids), 
+    '#options' => $roles, 
+    '#description' =>  t('Check at least one role. Only roles with \'access tinymce\' permission will be shown here.'), 
+    '#required' => TRUE
+  );
+  $form['basic']['default'] = array(
+    '#type' => 'select', 
+    '#title' => t('Default state'),
+    '#default_value' => $edit->settings['default'] ? $edit->settings['default'] : 'false', 
+    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#description' => t('Default editor state for users in this profile. Users will be able to override this state if the next option is enabled.'),
+  );
+  $form['basic']['user_choose'] = array(
+    '#type' => 'select', 
+    '#title' => t('Allow users to choose default'),
+    '#default_value' => $edit->settings['user_choose'] ? $edit->settings['user_choose'] : 'false', 
+    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#description' => t('If allowed, users will be able to choose their own TinyMCE default state by visiting their profile page.'),
+  );
   // This line upgrades previous versions of TinyMCE for user who previously selected a theme other than advanced.
   if ($edit->settings['theme'] != 'advanced') $edit->settings['theme'] = 'advanced';
-  $form['basic']['theme'] = array('#type' => 'hidden', '#value' => $edit->settings['theme'] ? $edit->settings['theme'] : 'advanced');
-  $languages = drupal_map_assoc(array('ar', 'ca', 'cs', 'cy', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'fr_ca', 'he', 'hu', 'is', 'it', 'ja', 'ko', 'nb', 'nl', 'nn', 'pl', 'pt', 'pt_br', 'ru', 'ru_KOI8-R', 'ru_UTF-8', 'sk', 'sv', 'th', 'zh_cn', 'zh_tw', 'zh_tw_utf8'));
-  $form['basic']['language'] = array('#type' => 'select', '#title' => t('Language'), '#default_value' => $edit->settings['language'] ? $edit->settings['language'] : 'en', '#options' => $languages, '#description' => t('The language for the TinyMCE interface. Language codes based on the <a href="http://www.loc.gov/standards/iso639-2/englangn.html">ISO-639-2</a> format.'));
+  
+  $form['basic']['theme'] = array(
+    '#type' => 'hidden', 
+    '#value' => $edit->settings['theme'] ? $edit->settings['theme'] : 'advanced'
+  );
+  
+  $form['basic']['language'] = array(
+    '#type' => 'select', 
+    '#title' => t('Language'), 
+    '#default_value' => $edit->settings['language'] ? $edit->settings['language'] : 'en', 
+    '#options' => drupal_map_assoc(array('ar', 'ca', 'cs', 'cy', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'fr_ca', 'he', 'hu', 'is', 'it', 'ja', 'ko', 'nb', 'nl', 'nn', 'pl', 'pt', 'pt_br', 'ru', 'ru_KOI8-R', 'ru_UTF-8', 'sk', 'sv', 'th', 'zh_cn', 'zh_tw', 'zh_tw_utf8')), 
+    '#description' => t('The language for the TinyMCE interface. Language codes based on the <a href="http://www.loc.gov/standards/iso639-2/englangn.html">ISO-639-2</a> format.')
+  );
+  
+  $form['basic']['safari_message'] = array(
+    '#type' => 'select', 
+    '#title' => t('Safari browser warning'),
+    '#default_value' => $edit->settings['safari_message'] ? $edit->settings['safari_message'] : 'false', 
+    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#description' => t('TinyMCE support for the Safari web browser is experimental and a warning message is displayed when that browser is detected. You can disable this message here.')
+  );
 
-  $form['visibility'] = array('#type' => 'fieldset', '#title' => t('Visibility'), '#collapsible' => TRUE, '#collapsed' => TRUE);
+  $form['visibility'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('Visibility'), 
+    '#collapsible' => TRUE, 
+    '#collapsed' => TRUE
+  );
+  
   $access = user_access('use PHP for block visibility');
 
   // If the visibility is set to PHP mode but the user doesn't have this block permission, don't allow them to edit nor see this PHP code
   if ($edit->settings['access'] == 2 && !$access) {
     $form['visibility'] = array();
-    $form['visibility']['access'] = array('#type' => 'value', '#value' => 2);
-    $form['visibility']['access_pages'] = array('#type' => 'value', '#value' => $edit->settings['access_pages']);
+    $form['visibility']['access'] = array(
+      '#type' => 'value', 
+      '#value' => 2
+    );
+    $form['visibility']['access_pages'] = array(
+      '#type' => 'value', 
+      '#value' => $edit->settings['access_pages']
+    );
   }
   else {
     $options = array(t('Show on every page except the listed pages.'), t('Show on only the listed pages.'));
@@ -670,11 +777,28 @@ function tinymce_profile_form($edit) {
       $options[] = t('Show if the following PHP code returns <code>TRUE</code> (PHP-mode, experts only).');
       $description .= t('If the PHP-mode is chosen, enter PHP code between %php. Note that executing incorrect PHP-code can break your Drupal site.', array('%php' => theme('placeholder', '<?php ?>')));
     }
-    $form['visibility']['access'] = array('#type' => 'radios', '#title' => t('Show tinymce on specific pages'), '#default_value' => isset($edit->settings['access']) ? $edit->settings['access'] : 1, '#options' => $options);
-    $form['visibility']['access_pages'] = array('#type' => 'textarea', '#title' => t('Pages'), '#default_value' => isset($edit->settings['access_pages']) ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages'), '#description' => $description);
+    $form['visibility']['access'] = array(
+      '#type' => 'radios', 
+      '#title' => t('Show tinymce on specific pages'), 
+      '#default_value' => isset($edit->settings['access']) ? $edit->settings['access'] : 1, 
+      '#options' => $options
+    );
+    $form['visibility']['access_pages'] = array(
+      '#type' => 'textarea', 
+      '#title' => t('Pages'), 
+      '#default_value' => isset($edit->settings['access_pages']) ? $edit->settings['access_pages'] : tinymce_help('admin/settings/tinymce#pages'), 
+      '#description' => $description
+    );
   }
 
-  $form['buttons'] = array('#type' => 'fieldset', '#title' => t('Buttons and plugins'), '#collapsible' => TRUE, '#collapsed' => TRUE, '#tree' => TRUE, '#theme' => 'tinymce_profile_form_buttons');
+  $form['buttons'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('Buttons and plugins'), 
+    '#collapsible' => TRUE, 
+    '#collapsed' => TRUE, 
+    '#tree' => TRUE, 
+    '#theme' => 'tinymce_profile_form_buttons'
+  );
 
   $metadata = _tinymce_get_buttons(FALSE);
   // Generate the button list.
@@ -719,24 +843,122 @@ function tinymce_profile_form($edit) {
     }
   }
 
-  $form['appearance'] = array('#type' => 'fieldset', '#title' => t('Editor appearance'), '#collapsible' => TRUE, '#collapsed' => TRUE);
-  $form['appearance']['toolbar_loc'] = array('#type' => 'select', '#title' => t('Toolbar location'), '#default_value' => $edit->settings['toolbar_loc'], '#options' => array('bottom' => 'bottom', 'top' => 'top'), '#description' => t('Show toolbar at the top or bottom of the editor area?'));
-  $form['appearance']['toolbar_align'] = array('#type' => 'select', '#title' => t('Toolbar alignment'), '#default_value' => $edit->settings['toolbar_align'], '#options' => array('center' => 'center', 'left' => 'left', 'right' => 'right'), '#description' => t('Align tool icons left, center, or right within the toolbar.'));
-  $form['appearance']['path_loc'] = array('#type' => 'select', '#title' => t('Path location'), '#default_value' => $edit->settings['path_loc'] ? $edit->settings['path_loc'] : 'bottom', '#options' => array('none' => 'none', 'top' => 'top', 'bottom' => 'bottom'), '#description' => t('Path to html elements (i.e. "body>table>tr>td"). Show at top, bottom, or not at all.'));
-  $form['appearance']['resizing'] = array('#type' => 'select', '#title' => t('Enable resizing button'), '#default_value' => isset($edit->settings['resizing']) ? 'true' : 'false', '#options' => array('false' => 'false', 'true' => 'true'), '#description' => t(' This option gives you the ability to enable/disable the resizing button. If enabled the <strong>Path location toolbar</strong> must be set to "top" or "bottom" in order to display the resize icon.'));
-  $form['appearance']['block_formats'] = array('#type' => 'textfield', '#title' => t('Block formats'), '#default_value' => $edit->settings['block_formats'] ? $edit->settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6', '#size' => 40, '#maxlength' => 250, '#description' => t('Comma separated list of HTML block formats. You can only remove elements, not add.'));
+  $form['appearance'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('Editor appearance'), 
+    '#collapsible' => TRUE, 
+    '#collapsed' => TRUE
+  );
+  
+  $form['appearance']['toolbar_loc'] = array(
+    '#type' => 'select', 
+    '#title' => t('Toolbar location'), 
+    '#default_value' => $edit->settings['toolbar_loc'], 
+    '#options' => array('bottom' => 'bottom', 'top' => 'top'), 
+    '#description' => t('Show toolbar at the top or bottom of the editor area?')
+  );
+  
+  $form['appearance']['toolbar_align'] = array(
+    '#type' => 'select', 
+    '#title' => t('Toolbar alignment'), 
+    '#default_value' => $edit->settings['toolbar_align'], 
+    '#options' => array('center' => 'center', 'left' => 'left', 'right' => 'right'), 
+    '#description' => t('Align tool icons left, center, or right within the toolbar.')
+  );
+  
+  $form['appearance']['path_loc'] = array(
+    '#type' => 'select', 
+    '#title' => t('Path location'), 
+    '#default_value' => $edit->settings['path_loc'] ? $edit->settings['path_loc'] : 'bottom', 
+    '#options' => array('none' => 'none', 'top' => 'top', 'bottom' => 'bottom'), 
+    '#description' => t('Path to html elements (i.e. "body>table>tr>td"). Show at top, bottom, or not at all.')
+  );
+  
+  $form['appearance']['resizing'] = array(
+    '#type' => 'select', 
+    '#title' => t('Enable resizing button'), 
+    '#default_value' => isset($edit->settings['resizing']) ? 'true' : 'false', 
+    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#description' => t(' This option gives you the ability to enable/disable the resizing button. If enabled the <strong>Path location toolbar</strong> must be set to "top" or "bottom" in order to display the resize icon.')
+  );
+  
+  $form['appearance']['block_formats'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Block formats'), 
+    '#default_value' => $edit->settings['block_formats'] ? $edit->settings['block_formats'] : 'p,address,pre,h1,h2,h3,h4,h5,h6', 
+    '#size' => 40, 
+    '#maxlength' => 250, 
+    '#description' => t('Comma separated list of HTML block formats. You can only remove elements, not add.')
+  );
 
-  $form['output'] = array('#type' => 'fieldset', '#title' => t('Cleanup and output'), '#collapsible' => TRUE, '#collapsed' => TRUE);
-  $form['output']['verify_html'] = array('#type' => 'select', '#title' => t('Verify HTML'), '#default_value' => $edit->settings['verify_html'], '#options' => array('true' => 'true', 'false' => 'false'), '#description' => t('Should the HTML contents be verified or not? Verifying will strip &lt;head&gt tags, so choose false if you will be editing full page HTML.'));
-  $form['output']['preformatted'] = array('#type' => 'select', '#title' => t('Preformatted'), '#default_value' => $edit->settings['preformatted'], '#options' => array('false' => 'false', 'true' => 'true'), '#description' => t('If this option is set to true, the editor will insert TAB characters on tab and preserve other whitespace characters just like a PRE HTML element does.'));
-  $form['output']['convert_fonts_to_styles'] = array('#type' => 'select', '#title' => t('Convert &lt;font&gt; tags to styles'), '#default_value' => $edit->settings['convert_fonts_to_styles'], '#options' => array('true' => 'true', 'false' => 'false'), '#description' => t('If you set this option to true, font size, font family, font color and font background color will be replaced by inline styles.'));
+  $form['output'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('Cleanup and output'), 
+    '#collapsible' => TRUE, 
+    '#collapsed' => TRUE
+  );
+  
+  $form['output']['verify_html'] = array(
+    '#type' => 'select', 
+    '#title' => t('Verify HTML'), 
+    '#default_value' => $edit->settings['verify_html'], 
+    '#options' => array('true' => 'true', 'false' => 'false'), 
+    '#description' => t('Should the HTML contents be verified or not? Verifying will strip &lt;head&gt tags, so choose false if you will be editing full page HTML.')
+  );
+  
+  $form['output']['preformatted'] = array(
+    '#type' => 'select', 
+    '#title' => t('Preformatted'), 
+    '#default_value' => $edit->settings['preformatted'], 
+    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#description' => t('If this option is set to true, the editor will insert TAB characters on tab and preserve other whitespace characters just like a PRE HTML element does.')
+  );
+  
+  $form['output']['convert_fonts_to_styles'] = array(
+    '#type' => 'select', 
+    '#title' => t('Convert &lt;font&gt; tags to styles'), 
+    '#default_value' => $edit->settings['convert_fonts_to_styles'], 
+    '#options' => array('true' => 'true', 'false' => 'false'), 
+    '#description' => t('If you set this option to true, font size, font family, font color and font background color will be replaced by inline styles.')
+  );
 
-  $form['css'] = array('#type' => 'fieldset', '#title' => t('CSS'), '#collapsible' => TRUE, '#collapsed' => TRUE);
-  $form['css']['css_setting'] = array('#type' => 'select', '#title' => t('Editor CSS'), '#default_value' => $edit->settings['css_setting'] ? $edit->settings['css_setting'] : 'theme', '#options' => array('theme' => 'use theme css', 'self' => 'define css', 'none' => 'tinyMCE default'), '#description' => t('Defines the CSS to be used in the editor area.<br />use theme css - load style.css from current site theme.<br/>define css - enter path for css file below.<br />tinyMCE default - uses default CSS from editor.'));
-  $form['css']['css_path'] = array('#type' => 'textfield', '#title' => t('CSS path'), '#default_value' => $edit->settings['css_path'], '#size' => 40, '#maxlength' => 255, '#description' => t('Enter path to CSS file (example: "css/editor.css").<br />Macros: %h (host name: http://www.example.com/), %t (path to theme: theme/yourtheme/)<br />Be sure to select "define css" above.'));
-  $form['css']['css_classes'] = array('#type' => 'textfield', '#title' => t('CSS classes'), '#default_value' => $edit->settings['css_classes'], '#size' => 40, '#maxlength' => 255, '#description' => t('Adds CSS classes to the "styles" droplist. Format is: &lt;title&gt;=&lt;class&gt;;<br/> Example: Header 1=header1;Header 2=header2;Header 3=header3 (note: no trailing \';\')<br />Leave blank to automatically import list of CSS classes from style sheet.'));
+  $form['css'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('CSS'), 
+    '#collapsible' => TRUE, 
+    '#collapsed' => TRUE
+  );
+  
+  $form['css']['css_setting'] = array(
+    '#type' => 'select', 
+    '#title' => t('Editor CSS'), 
+    '#default_value' => $edit->settings['css_setting'] ? $edit->settings['css_setting'] : 'theme', 
+    '#options' => array('theme' => 'use theme css', 'self' => 'define css', 'none' => 'tinyMCE default'), 
+    '#description' => t('Defines the CSS to be used in the editor area.<br />use theme css - load style.css from current site theme.<br/>define css - enter path for css file below.<br />tinyMCE default - uses default CSS from editor.')
+  );
+  
+  $form['css']['css_path'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('CSS path'), 
+    '#default_value' => $edit->settings['css_path'], 
+    '#size' => 40, 
+    '#maxlength' => 255, 
+    '#description' => t('Enter path to CSS file (example: "css/editor.css").<br />Macros: %h (host name: http://www.example.com/), %t (path to theme: theme/yourtheme/)<br />Be sure to select "define css" above.')
+  );
+  
+  $form['css']['css_classes'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('CSS classes'), 
+    '#default_value' => $edit->settings['css_classes'], 
+    '#size' => 40, 
+    '#maxlength' => 255, 
+    '#description' => t('Adds CSS classes to the "styles" droplist. Format is: &lt;title&gt;=&lt;class&gt;;<br/> Example: Header 1=header1;Header 2=header2;Header 3=header3 (note: no trailing \';\')<br />Leave blank to automatically import list of CSS classes from style sheet.')
+  );
 
-  $form['submit'] = array('#type' => 'submit', '#value' => $btn);
+  $form['submit'] = array(
+    '#type' => 'submit', 
+    '#value' => $btn
+  );
 
   $output .= drupal_get_form('tinymce_profile_form', $form);
 
@@ -803,27 +1025,17 @@ function tinymce_profile_overview() {
 
   $profiles = tinymce_profile_load();
   if ($profiles) {
-    $output .= t('<p><a href="%create-profile-url">Create new profile</a></p>', array('%create-profile-url' => url('admin/settings/tinymce/add')));
     $roles = user_roles();
     $header = array(t('Profile'), t('Roles'), t('Operations'));
     foreach ($profiles as $p) {
       $rows[] = array(array('data' => $p->name, 'valign' => 'top'), array('data' => implode("<br />\n", $p->rids)), array('data' => l(t('edit'), 'admin/settings/tinymce/edit/'. urlencode($p->name)) . ' '. l(t('delete'), 'admin/settings/tinymce/delete/'. urlencode($p->name)), 'valign' => 'top'));
     }
-    $output .= theme('table', $header, $rows). '<p>&nbsp;</p>';
+    $output .= theme('table', $header, $rows);
+    $output .= t('<p><a href="%create-profile-url">Create new profile</a></p>', array('%create-profile-url' => url('admin/settings/tinymce/add')));
   }
   else {
     drupal_set_message(t('No profiles found. Click here to <a href="%create-profile-url">create a new profile</a>.', array('%create-profile-url' => url('admin/settings/tinymce/add'))));
   }
-
-  $form['settings'] = array('#type' => 'fieldset', '#title' => t('Default settings'), '#collapsible' => TRUE);
-  $form['settings']['tinymce_default_state'] = array('#type' => 'radios', '#title' => t('Default tinymce state'), '#default_value' => variable_get('tinymce_default_state', 0), '#options' => array(t('Off'), t('On')), '#description' => t('Should tinymce be enabled or disabled by default when it\'s first loaded from a textarea? Note: The user may override this setting in their profile.'));
-  $form['settings']['tinymce_safari_message'] = array(
-    '#type' => 'radios', '#title' => t('Safari browser warning'), '#default_value' => variable_get('tinymce_safari_message', 0), '#options' => array(t('Disabled'), t('Enabled')),
-    '#description' => t('TinyMCE support for the Safari web browser is experimental and a warning message is displayed when that browser is detected. You can disable this message here.')
-  );
-  $form['settings']['submit'] = array('#type' => 'submit', '#value' => t('Save settings'));
-
-  $output .= drupal_get_form('default_settings', $form);
 
   return $output;
 }
@@ -837,6 +1049,12 @@ function tinymce_profile_save($edit) {
   db_query("INSERT INTO {tinymce_settings} (name, settings) VALUES ('%s', '%s')", $edit['name'], serialize($edit));
   foreach ($edit['rids'] as $rid => $value) {
     db_query("INSERT INTO {tinymce_role} (name, rid) VALUES ('%s', %d)", $edit['name'], $rid);
+  }
+
+  // if users can't set their own defaults, make sure to remove $user->tinymce_status so their default doesn't override the main default
+  if ($edit['user_choose'] == 'false') {
+    global $user;
+    user_save($user, array('tinymce_status' => NULL));
   }
 }
 
@@ -905,4 +1123,27 @@ function _tinymce_page_match($edit) {
   }
 
   return $page_match;
+}
+
+function tinymce_user_get_profile($account) {
+  $profile_name = db_result(db_query('SELECT s.name FROM {tinymce_settings} s INNER JOIN {tinymce_role} r ON r.name = s.name WHERE r.rid IN (%s)', implode(',', array_keys($account->roles))));
+  if ($profile_name){
+    return tinymce_profile_load($profile_name);
+  }
+  else {
+    return FALSE;
+  }
+}
+
+function tinymce_user_get_status($user, $profile){
+  $settings = $profile->settings;
+
+  if ($settings['user_choose']) {
+    $status = isset($user->tinymce_status) ? $user->tinymce_status : (isset($settings['default']) ? $settings['default'] : 'false');
+  }
+  else {
+    $status = isset($settings['default']) ? $settings['default'] : 'false';
+  }
+
+  return $status;
 }
