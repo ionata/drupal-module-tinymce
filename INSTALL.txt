@@ -38,18 +38,11 @@ NOTE: During this installation process you'll be asked to also
 3. Place the entire 'tinymce' engine folder inside your modules/tinymce
    directory. So the TinyMCE engine will live in modules/tinymce/tinymce
 
-4. Load the database definition file (tinymce.mysql) using the
-   tool of your choice (e.g. phpmyadmin). For mysql and command line
-   access use:
-
-     mysql -u user -p drupal < tinymce.mysql
-
-   Replace 'user' with the MySQL username, and 'drupal' with the
-   database being used.
-
 4. Enable this module by navigating to:
 
      administer > modules
+     
+     *note - all database tables will be automatically created during this step
 
 5. Setup role based tinymce profiles via
 
