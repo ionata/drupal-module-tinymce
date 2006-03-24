@@ -35,7 +35,7 @@ function tinymce_help($section) {
       return t('<p style="font-size:x-small">$Revision$ $Date$</p>' .
                '<p>TinyMCE adds what-you-see-is-what-you-get (WYSIWYG) html editing to textareas. This editor can be enabled/disabled without reloading the page by clicking a link below each textarea.</p>
                 <p>Profiles can be defined based on user roles. A TinyMCE profile can define which pages receive this TinyMCE capability, what buttons or themes are enabled for the editor, how the editor is displayed, and a few other editor functions.</p>
-                <p>Lastly, only users with the <code>access tinymce</code> <a href="%url">permission</a> will be able to use TinyMCE.</p>', array('%url' => 'admin/access')
+                <p>Lastly, only users with the <code>access tinymce</code> <a href="%url">permission</a> will be able to use TinyMCE.</p>', array('%url' => url('admin/access'))
               );
   }
 }
