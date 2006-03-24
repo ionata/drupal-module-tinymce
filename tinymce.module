@@ -1048,17 +1048,12 @@ function tinymce_profile_validate($edit) {
 function _tinymce_page_match($edit) {
   $page_match = FALSE;
 
-  //Kill TinyMCE if we're editing a textarea with PHP in it!
-  if ($_POST['edit']['format'] == 2) {
-    return FALSE;
-  }
-  else {
-    // PHP input formats are #2 in the filters table.
-    preg_match("|^node/(\d+)(/edit)$|", $_GET['q'], $match);
-    if (intval($match[1]) > 0) {
-      if (db_result(db_query('SELECT format FROM {node_revisions} WHERE nid = %d AND vid = %d AND format = 2', $match[1], $match[1]))) {
-        return FALSE;
-      }
+  // Kill TinyMCE if we're editing a textarea with PHP in it!
+  // PHP input formats are #2 in the filters table.
+  if (is_numeric(arg(1))) {
+    $node = node_load(arg(1));
+    if ($node->format == 2) {
+      return FALSE;
     }
   }
 
