@@ -58,53 +58,6 @@ function tinymce_perm() {
 }
 
 /**
- * Implementation of hook_img_assist_head().
- */
-function tinymce_img_assist_head() {
-  // The tinymce docs say to include tiny_mce_popup.js, but this was killing IE!
-  $popup_path = base_path() . drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce/tiny_mce_popup.js';
-  $img_assist_prop = $img_template = '';
-  if (module_exist('img_assist')) {
-    $img_assist_prop = base_path() . drupal_get_path('module', 'img_assist'). '/properties.js';
-    $img_assist_prop = '<script type="text/javascript" src="'. $img_assist_prop .'"></script>';
-
-    $img_template = variable_get('img_assist_img_html', img_assist_help('img_assist/template'));
-    $nl = "\n";
-    $img_template = preg_replace('/\n|\r|(\r\n)/m', '\\'. $nl, $img_template);
-  }
-  $clean_url    = variable_get('clean_url', 0);
-
-$output = <<<EOD
-$img_assist_prop
-<script type="text/javascript">
-  var clean_url    = $clean_url;
-  var img_template = '$img_template';
-
-  function insertImage(form) {
-    if (window.opener) {
-      form['edit[filepath]'].value = window.opener.tinyMCE.convertURL(form['edit[filepath]'].value);
-      form['edit[nodePath]'].value = window.opener.tinyMCE.convertURL(form['edit[nodePath]'].value);
-
-      var img = generate_image_tag(form, 'html');
-      //img = img.replace(/\\r|\\n|\\t/g, '');
-
-      window.opener.tinyMCE.execInstanceCommand(myTextarea.name, 'mceInsertContent', false, img, true);
-    }
-  }
-</script>
-EOD;
-
-  return $output;
-}
-
-/**
- * Implementation of hook_img_assist_on_submit().
- */
-function tinymce_img_assist_on_submit() {
-  return 'parent.insertImage(this.form);';
-}
-
-/**
  * Implementation of hook_elements().
  */
 function tinymce_elements() {
@@ -160,13 +113,6 @@ function tinymce_process_textarea($element) {
     }
     $tinymce_settings = implode(",\n    ", $settings);
 
-    if (module_exist('img_assist')) {
-      $img_assist_js_on = base_path() . url('img_assist/add&editor=tinymce') .'&textarea=';
-      $img_assist_js_off = base_path() . url('img_assist/add') .'&textarea=';
-      $img_assist_on = base_path() . url('img_assist/add&editor=tinymce') .'&textarea=edit['. $textarea_name .']';
-      $img_assist_off = base_path() . url('img_assist/add') .'&textarea=edit['. $textarea_name .']';
-    }
-
     $enable  = t('enable rich-text');
     $disable = t('disable rich-text');
 
@@ -191,7 +137,7 @@ $js_toggle = <<<EOD
       link.innerHTML = '$disable';
       link.href = "javascript:mceToggle('" +id+ "', '" +linkid+ "');";
       if (img_assist)
-        img_assist.href = "$img_assist_js_on"+ element.name;
+        img_assist.innerHTML = '';
       link.blur();
     }
     else {
@@ -200,7 +146,7 @@ $js_toggle = <<<EOD
       link.innerHTML = '$enable';
       link.href = "javascript:mceToggle('" +id+ "', '" +linkid+ "');";
       if (img_assist)
-        img_assist.href = "$img_assist_js_off"+ element.name;
+        img_assist.innerHTML = img_assist_default_link;
       link.blur();
     }
   }
@@ -211,15 +157,22 @@ $status = tinymce_user_get_status($user, $profile);
 
 // note we test for string == true because we save our settings as strings
 $link_text = $status == 'true' ? $disable : $enable;
+$img_assist_link = ($status == 'true') ? 'yes' : 'no';
 $no_wysiwyg = t('Your current web browser does not support WYSIWYG editing.');
 $wysiwyg_link = <<<EOD
 <script type="text/javascript">
   img_assist = document.getElementById('img_assist-link-edit-$textarea_name');
   if (img_assist) {
-    img_assist.href = tinyMCE.getEditorId('edit-$textarea_name') == null ? "$img_assist_on" : "$img_assist_off";
+    var img_assist_default_link = img_assist.innerHTML;
+    if ('$img_assist_link' == 'yes') {
+      img_assist.innerHTML = tinyMCE.getEditorId('edit-$textarea_name') == null ? '' : img_assist_default_link;
+    } 
+    else {
+      img_assist.innerHTML = tinyMCE.getEditorId('edit-$textarea_name') == null ? img_assist_default_link : '';
+    }
   }
   if (typeof(document.execCommand) == 'undefined') {
-    img_assist.href = "$img_assist_off";
+    img_assist.innerHTML = img_assist_default_link;
     document.write('<div style="font-size:x-small">$no_wysiwyg</div>');
   }
   else {
@@ -411,6 +364,7 @@ function _tinymce_get_themes() {
 function _tinymce_get_buttons($skip_metadata = TRUE) {
   include_once(drupal_get_path('module', 'tinymce'). '/plugin_reg.php');
   $plugins = _tinymce_plugins();
+	
   if ($skip_metadata == FALSE && is_array($plugins)) {
     foreach ($plugins as $name => $plugin) {
       $file = drupal_get_path('module', 'tinymce'). '/tinymce/jscripts/tiny_mce/plugins/'. $name .'/editor_plugin_src.js';
