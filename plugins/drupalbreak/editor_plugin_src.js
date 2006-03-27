@@ -1,3 +1,12 @@
+/**
+ * $RCSfile$
+ * $Revision$
+ * $Date$
+ *
+ * @author Nathan Haug
+ *
+ */
+
 /* Import plugin specific language pack */
 tinyMCE.importPluginLanguagePack('drupalbreak', 'en');
 
@@ -8,7 +17,7 @@ var TinyMCE_drupalbreakPlugin = {
   		author : 'Nathan Haug',
   		authorurl : 'http://www.quicksketch.org',
   		infourl : '',
-  		version : '1.2'
+  		version : '$Revision$'
   	};
   },
 
@@ -28,50 +37,6 @@ var TinyMCE_drupalbreakPlugin = {
     return "";
   },
 
-  parseAttributes : function(attribute_string) {
-  	var attributeName = "";
-  	var attributeValue = "";
-  	var withInName;
-  	var withInValue;
-  	var attributes = new Array();
-  	var whiteSpaceRegExp = new RegExp('^[ \n\r\t]+', 'g');
-
-  	if (attribute_string == null || attribute_string.length < 2)
-  		return null;
-
-  	withInName = withInValue = false;
-
-  	for (var i=0; i<attribute_string.length; i++) {
-  		var chr = attribute_string.charAt(i);
-
-  		if ((chr == '"' || chr == "'") && !withInValue)
-  			withInValue = true;
-  		else if ((chr == '"' || chr == "'") && withInValue) {
-  			withInValue = false;
-
-  			var pos = attributeName.lastIndexOf(' ');
-  			if (pos != -1)
-  				attributeName = attributeName.substring(pos+1);
-
-  			attributes[attributeName.toLowerCase()] = attributeValue.substring(1).toLowerCase();
-
-  			attributeName = "";
-  			attributeValue = "";
-  		} else if (!whiteSpaceRegExp.test(chr) && !withInName && !withInValue)
-  			withInName = true;
-
-  		if (chr == '=' && withInName)
-  			withInName = false;
-
-  		if (withInName)
-  			attributeName += chr;
-
-  		if (withInValue)
-  			attributeValue += chr;
-  	}
-
-  	return attributes;
-  },
 
   execCommand : function(editor_id, element, command, user_interface, value) {
   	function getAttrib(elm, name) {
@@ -170,7 +135,7 @@ var TinyMCE_drupalbreakPlugin = {
   			var startPos = -1;
   			while ((startPos = content.indexOf('<img', startPos+1)) != -1) {
   				var endPos = content.indexOf('/>', startPos);
-  				var attribs = TinyMCE_drupalbreak_parseAttributes(content.substring(startPos + 4, endPos));
+  				var attribs = parseAttributes(content.substring(startPos + 4, endPos));
 
   				if (attribs['class'] == "mce_plugin_drupalbreak_break") {
   					endPos += 2;
@@ -198,6 +163,52 @@ var TinyMCE_drupalbreakPlugin = {
 
   	// Pass through to next handler in chain
   	return content;
+  	
+  	/* Local function within cleanup() that parses the breakimage in and out */
+  	function parseAttributes (attribute_string) {
+			var attributeName = "";
+			var attributeValue = "";
+			var withInName;
+			var withInValue;
+			var attributes = new Array();
+			var whiteSpaceRegExp = new RegExp('^[ \n\r\t]+', 'g');
+	
+			if (attribute_string == null || attribute_string.length < 2)
+				return null;
+	
+			withInName = withInValue = false;
+	
+			for (var i=0; i<attribute_string.length; i++) {
+				var chr = attribute_string.charAt(i);
+	
+				if ((chr == '"' || chr == "'") && !withInValue)
+					withInValue = true;
+				else if ((chr == '"' || chr == "'") && withInValue) {
+					withInValue = false;
+	
+					var pos = attributeName.lastIndexOf(' ');
+					if (pos != -1)
+						attributeName = attributeName.substring(pos+1);
+	
+					attributes[attributeName.toLowerCase()] = attributeValue.substring(1).toLowerCase();
+	
+					attributeName = "";
+					attributeValue = "";
+				} else if (!whiteSpaceRegExp.test(chr) && !withInName && !withInValue)
+					withInName = true;
+	
+				if (chr == '=' && withInName)
+					withInName = false;
+	
+				if (withInName)
+					attributeName += chr;
+	
+				if (withInValue)
+					attributeValue += chr;
+			}
+	
+			return attributes;
+		}
   },
 
   handleNodeChange : function(editor_id, node, undo_index, undo_levels, visual_aid, any_selection) {
