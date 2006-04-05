@@ -833,7 +833,7 @@ function tinymce_profile_form($edit) {
   $form['appearance']['resizing'] = array(
     '#type' => 'select', 
     '#title' => t('Enable resizing button'), 
-    '#default_value' => isset($edit->settings['resizing']) ? 'true' : 'false', 
+    '#default_value' => isset($edit->settings['resizing']) ? $edit->settings['resizing'] : 'true',
     '#options' => array('false' => 'false', 'true' => 'true'), 
     '#description' => t(' This option gives you the ability to enable/disable the resizing button. If enabled the <strong>Path location toolbar</strong> must be set to "top" or "bottom" in order to display the resize icon.')
   );
