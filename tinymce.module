@@ -211,8 +211,11 @@ EOD;
     // Load a TinyMCE init for each textarea.
     if ($init) drupal_set_html_head($tinymce_invoke);
 
-    // Make sure to append to #suffix so it isn't completely overwritten
-    $element['#suffix'] .= $wysiwyg_link;
+    //settings are saved as strings, not booleans
+    if ($profile->settings['show_toggle'] == 'true') {
+      // Make sure to append to #suffix so it isn't completely overwritten
+      $element['#suffix'] .= $wysiwyg_link;
+    }
   }
 
   return $element;
@@ -649,6 +652,7 @@ function tinymce_profile_form($edit) {
     '#collapsible' => TRUE, 
     '#collapsed' => TRUE
   );
+  
   $form['basic']['name'] = array(
     '#type' => 'textfield', 
     '#title' => t('Profile name'), 
@@ -658,6 +662,7 @@ function tinymce_profile_form($edit) {
     '#description' => t('Enter a name for this profile. This name is only visible within the tinymce administration page.'), 
     '#required' => TRUE
   );
+  
   $form['basic']['rids'] = array(
     '#type' => 'checkboxes', 
     '#title' => t('Roles allowed to use this profile'), 
@@ -666,6 +671,7 @@ function tinymce_profile_form($edit) {
     '#description' =>  t('Check at least one role. Only roles with \'access tinymce\' permission will be shown here.'), 
     '#required' => TRUE
   );
+  
   $form['basic']['default'] = array(
     '#type' => 'select', 
     '#title' => t('Default state'),
@@ -673,6 +679,7 @@ function tinymce_profile_form($edit) {
     '#options' => array('false' => 'false', 'true' => 'true'), 
     '#description' => t('Default editor state for users in this profile. Users will be able to override this state if the next option is enabled.'),
   );
+  
   $form['basic']['user_choose'] = array(
     '#type' => 'select', 
     '#title' => t('Allow users to choose default'),
@@ -680,6 +687,15 @@ function tinymce_profile_form($edit) {
     '#options' => array('false' => 'false', 'true' => 'true'), 
     '#description' => t('If allowed, users will be able to choose their own TinyMCE default state by visiting their profile page.'),
   );
+  
+  $form['basic']['show_toggle'] = array(
+    '#type' => 'select', 
+    '#title' => t('Show disable/enable rich text editor toggle'),
+    '#default_value' => $edit->settings['show_toggle'] ? $edit->settings['show_toggle'] : 'true', 
+    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#description' => t('Whether or not to show the disable/enable rich text editor toggle below the textarea. If false, editor defaults to the global default or user default (see above).'),
+  );
+  
   // This line upgrades previous versions of TinyMCE for user who previously selected a theme other than advanced.
   if ($edit->settings['theme'] != 'advanced') $edit->settings['theme'] = 'advanced';
   
