@@ -89,7 +89,7 @@ function tinymce_process_textarea($element) {
   }
   $profile = tinymce_profile_load($profile_name);
   $init = tinymce_config($profile);
-  $init['elements'] = 'edit['. $textarea_name .']';
+  $init['elements'] = 'edit-'. $textarea_name;
 
   if (_tinymce_page_match($profile)) {
     // Merge user-defined TinyMCE settings.
