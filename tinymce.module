@@ -131,8 +131,8 @@ $js_toggle = <<<EOD
     link = document.getElementById(linkid);
     img_assist = document.getElementById('img_assist-link-'+ id);
 
-    if (tinyMCE.getEditorId(element.name) == null) {
-      tinyMCE.addMCEControl(element, element.name);
+    if (tinyMCE.getEditorId(element.id) == null) {
+      tinyMCE.addMCEControl(element, element.id);
       element.togg = 'on';
       link.innerHTML = '$disable';
       link.href = "javascript:mceToggle('" +id+ "', '" +linkid+ "');";
@@ -141,7 +141,7 @@ $js_toggle = <<<EOD
       link.blur();
     }
     else {
-      tinyMCE.removeMCEControl(tinyMCE.getEditorId(element.name));
+      tinyMCE.removeMCEControl(tinyMCE.getEditorId(element.id));
       element.togg = 'off';
       link.innerHTML = '$enable';
       link.href = "javascript:mceToggle('" +id+ "', '" +linkid+ "');";
