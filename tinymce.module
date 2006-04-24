@@ -216,6 +216,9 @@ EOD;
       // Make sure to append to #suffix so it isn't completely overwritten
       $element['#suffix'] .= $wysiwyg_link;
     }
+  }  
+  else {
+    $element['#resizable'] = TRUE;
   }
 
   return $element;
