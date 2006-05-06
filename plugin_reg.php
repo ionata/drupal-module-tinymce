@@ -72,6 +72,9 @@ $plugins['insertdatetime']['theme_advanced_buttons2'] = array('insertdate', 'ins
 $plugins['insertdatetime']['plugin_insertdate_dateFormat'] = array('%Y-%m-%d');
 $plugins['insertdatetime']['plugin_insertdate_timeFormat'] = array('%H:%M:%S');
 
+$plugins['layer'] = array();
+$plugins['layer']['theme_advanced_buttons3'] = array('insertlayer', 'moveforward', 'movebackward', 'absolute');
+
 $plugins['paste'] = array();
 $plugins['paste']['theme_advanced_buttons3'] = array('pastetext', 'pasteword', 'selectall');
 
@@ -83,6 +86,15 @@ $plugins['print']['theme_advanced_buttons3'] = array('print');
 
 $plugins['searchreplace'] = array();
 $plugins['searchreplace']['theme_advanced_buttons2'] = array('search', 'replace');
+
+ 
+if (is_dir(drupal_get_path('module', 'tinymce') . '/tinymce/jscripts/tiny_mce/plugins/spellchecker/')) {
+  $plugins['spellchecker'] = array();
+  $plugins['spellchecker']['theme_advanced_buttons3'] = array('spellchecker');
+}
+
+$plugins['style'] = array();
+$plugins['style']['theme_advanced_buttons3'] = array('styleprops');
 
 $plugins['table'] = array();
 $plugins['table']['theme_advanced_buttons3'] = array('tablecontrols');
