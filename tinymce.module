@@ -55,8 +55,16 @@ function tinymce_admin_settings() {
     '#title' => t('Editor Mode'),
 	'#default_value' => variable_get('editor_mode', 0),
 	'#options' => array(t('Full'), t('Compact'), t('Simple')), 
-    '#description' => t("FULL: enable all TinyMCE features. COMPACT: enable most used features. SIMPLE: just enable simple editor.")
-	);
+    '#description' => t("FULL: enable all TinyMCE features. COMPACT: enable most used features. SIMPLE: just enable simple editor.<hr>")
+  );
+  
+  $form['tinymce_settings']['editor_element'] = array(
+    '#type' => 'radios',
+    '#title' => t('Enable TinyMCE for'),
+	'#default_value' => variable_get('editor_element', 0),
+	'#options' => array(t('Edit-body only'), t('Edit-comment only'), t('Both')), 
+    '#description' => t("If you want TinyMCE available for textarea of edit-body and comment then you should select <b>Both</b> option.")
+  );
   
   return system_settings_form($form);
 }
@@ -70,6 +78,7 @@ function tinymce_form_alter($form_id, &$form) {
 
 function tinymce_add_javascript() {
   $editor_mode  = variable_get("editor_mode", 0); 
+  $editor_element  = variable_get("editor_element", 0); 
   
   drupal_add_js(drupal_get_path('module', 'tinymce') . '/includes/jscripts/tiny_mce/tiny_mce.js');
   //drupal_add_js(drupal_get_path('module', 'tinymce') . '/imce/imce_set.js');
@@ -78,5 +87,19 @@ function tinymce_add_javascript() {
   elseif ($editor_mode==1) { drupal_add_js(drupal_get_path('module', 'tinymce') . '/themes/tinymce_compact.js'); }
   else { drupal_add_js(drupal_get_path('module', 'tinymce') . '/themes/tinymce_simple.js'); }
   
+  //tinyMCE.configs[i]['file_browser_callback'] = 'imceImageBrowser';
+  if ($editor_element==0) {$tinymce_elements = 'edit-body';}
+  elseif ($editor_element==1) {$tinymce_elements = 'edit-comment';}
+  else {$tinymce_elements = 'edit-body,edit-comment';}
+  
+  
+  drupal_add_js("
+    if ('undefined' != typeof(window.tinyMCE)) {
+      for (var i=0; i<tinyMCE.configs.length; i++) {
+        tinyMCE.configs[i]['elements'] = '$tinymce_elements';
+      }
+    }
+  "
+  , 'inline');
 }
 

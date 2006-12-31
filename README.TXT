@@ -4,6 +4,10 @@ TinyMCE is a platform independent web based Javascript HTML WYSIWYG editor contr
 released as Open Source under LGPL by Moxiecode Systems AB. It has the ability to 
 convert HTML TEXTAREA fields or other HTML elements to editor instances.
 
+IMPORTANT!!!
+  TinyMCE.module requires IMCE.module to enable these feature: File/Image Manager, Quota,
+  Auto Resize, folder per user, file upload, file delete, etc.
+
 INSTALL
 -------
 1. Extract to sites/all/modules, you will see: sites/all/modules/tinymce 
@@ -29,3 +33,10 @@ IMCE Integration
    if (module_exists('tinymce') && variable_get('imce_settings_tinymce', 1)) {
 
 5. Refresh you website.
+
+HOW TO ENABLE TINYMCE ON CERTAIN TEXTAREA?
+------------------------------------------
+Go to TinyMCE settings page for this option.
+
+
+
