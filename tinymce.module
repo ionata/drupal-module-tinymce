@@ -66,10 +66,22 @@ function tinymce_admin_settings() {
     '#description' => t("If you want TinyMCE available for textarea of edit-body and comment then you should select <b>Both</b> option.")
   );
   
+  $form['tinymce_settings']['editor_node_type'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Enable TinyMCE for this node types'),
+	'#default_value' => variable_get('editor_node_type', 'page,story,blog'),
+    '#description' => t("Node type in case-sensitive name, i.e: page,story,data_product,blog")
+  );
+    
   return system_settings_form($form);
 }
 
 function tinymce_form_alter($form_id, &$form) {
+  $editor_node_type  = variable_get("editor_node_type", 'page,story,blog');
+  $form_type         = $form['type']['#value'];
+  
+  if (!preg_match("/\b$form_type\b/i", $editor_node_type)) return;  
+  
   if ($form_id == 'comment_form' || (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id) && user_access('access tinymce')) {
     $queries = array("textarea#body", "textarea#comment");
     tinymce_add_javascript();
@@ -102,4 +114,3 @@ function tinymce_add_javascript() {
   "
   , 'inline');
 }
-
