@@ -2,4 +2,9 @@
 name = TinyMCE
 description = The most popular WYSIWYG editor for advance content.
 ; version added by drupal.org packaging script on 2006-11-25
-version = "5.x-1.0"
+version = "4.7.x-1.x-to-5"
+
+; Information added by drupal.org packaging script on 2007-01-01
+version = "4.7.x-1.x-to-5"
+project = "tinymce"
+
