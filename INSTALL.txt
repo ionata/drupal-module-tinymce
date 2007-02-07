@@ -7,6 +7,7 @@ Maintainers:  Theodore Serbinski <stanson AT gmail DOT com> and
               Matt Westgate <drupal AT asitis DOT org> and
               Jeff Robbins <robbins AT jjeff DOT com>
               Richard Bennett <richard.b AT gritechnologies DOT com>
+              Jonathan <suport@drupal DOT com>
 
            
          
