@@ -24,7 +24,7 @@ NOTE: During this installation process you'll be asked to also
    directory.
 
    
-2. Download TinyMCE 2.0 from
+2. Download TinyMCE 2.1 from
 
      http://tinymce.moxiecode.com/
 
