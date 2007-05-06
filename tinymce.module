@@ -496,7 +496,7 @@ function tinymce_config($profile) {
   $settings = $profile->settings;
 
   // Build a default list of TinyMCE settings.
-
+convert_fonts_to_spans
   // Is tinymce on by default?
   $status = tinymce_user_get_status($user, $profile);
   
@@ -509,7 +509,7 @@ function tinymce_config($profile) {
   $init['entity_encoding']    = 'raw';
   $init['verify_html']        = $settings['verify_html'] ? $settings['verify_html'] : 'false';
   $init['preformatted']       = $settings['preformatted'] ? $settings['preformatted'] : 'false';
-  $init['convert_fonts_to_styles'] = $settings['convert_fonts_to_styles'] ? $settings['convert_fonts_to_styles'] : 'false';
+  $init['convert_fonts_to_spans'] = $settings['convert_fonts_to_spans'] ? $settings['convert_fonts_to_spans'] : 'false';
   $init['theme_advanced_resize_horizontal'] = 'false';
   $init['theme_advanced_resizing_use_cookie'] = 'false';
   
@@ -908,10 +908,10 @@ function tinymce_profile_form_build($edit) {
     '#description' => t('If this option is set to true, the editor will insert TAB characters on tab and preserve other whitespace characters just like a PRE HTML element does.')
   );
   
-  $form['output']['convert_fonts_to_styles'] = array(
+  $form['output']['convert_fonts_to_spans'] = array(
     '#type' => 'select', 
     '#title' => t('Convert &lt;font&gt; tags to styles'), 
-    '#default_value' => $edit->settings['convert_fonts_to_styles'], 
+    '#default_value' => $edit->settings['convert_fonts_to_spans'], 
     '#options' => array('true' => 'true', 'false' => 'false'), 
     '#description' => t('If you set this option to true, font size, font family, font color and font background color will be replaced by inline styles.')
   );
