@@ -924,7 +924,7 @@ function tinymce_profile_form_build($edit) {
     '#default_value' => $edit->settings['css_path'], 
     '#size' => 40, 
     '#maxlength' => 255, 
-    '#description' => t('Enter path to CSS file (example: "css/editor.css").<br />Macros: !h (host name: http://www.example.com/), !t (path to theme: theme/yourtheme/)<br />Be sure to select "define css" above.')
+    '#description' => t('Enter path to CSS file (<em>example: "css/editor.css"</em>) or a list of css files seperated by a comma (<em>example: /themes/garland/style.css,http://domain.com/customMCE.css</em>).<br />Macros: %h (host name: http://www.example.com/), %t (path to theme: theme/yourtheme/)<br />Be sure to select "define css" above.')
   );
   
   $form['css']['css_classes'] = array(
