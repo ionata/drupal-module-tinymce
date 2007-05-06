@@ -496,7 +496,7 @@ function tinymce_config($profile) {
   $settings = $profile->settings;
 
   // Build a default list of TinyMCE settings.
-convert_fonts_to_spans
+
   // Is tinymce on by default?
   $status = tinymce_user_get_status($user, $profile);
   
