@@ -17,7 +17,7 @@ function tinymce_install() {
     case 'mysqli':
       db_query("CREATE TABLE {tinymce_settings} (
                 name varchar(128) NOT NULL default '',
-                settings text NOT NULL default '',
+                settings text,
                 PRIMARY KEY (name)
                ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
   
@@ -31,7 +31,7 @@ function tinymce_install() {
     case 'pgsql':
       db_query("CREATE TABLE {tinymce_settings} (
                 name varchar(128) NOT NULL default '',
-                settings text NOT NULL default '',
+                settings text,
                 PRIMARY KEY (name)
                );");
      
