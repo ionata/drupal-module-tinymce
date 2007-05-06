@@ -124,6 +124,14 @@ $tinymce_invoke = <<<EOD
 
 EOD;
 
+$tinymce_gz_invoke = <<<EOD
+
+  tinyMCE_GZ.init({
+    $tinymce_settings
+  });
+
+EOD;
+
 $js_toggle = <<<EOD
 
   function mceToggle(id, linkid) {
@@ -196,8 +204,13 @@ EOD;
         drupal_add_js($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/plugins/filemanager/jscripts/mcfilemanager.js');
       }
       
-      // TinyMCE Compressor
-      if (file_exists($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/tiny_mce_gzip.php')) {
+      // TinyMCE Compressor 1.0.9 and greater
+      if (file_exists($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/tiny_mce_gzip.js')) {
+        drupal_add_js($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/tiny_mce_gzip.js');
+        drupal_add_js($tinymce_gz_invoke, 'inline');
+      }
+      // TinyMCE Compressor (versions < 1.0.9)
+      elseif (file_exists($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/tiny_mce_gzip.php')) {
         drupal_add_js($tinymce_mod_path . '/tinymce/jscripts/tiny_mce/tiny_mce_gzip.php');
       }
       else {
