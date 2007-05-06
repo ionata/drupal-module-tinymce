@@ -63,8 +63,8 @@ function tinymce_elements() {
   $type = array();
 
   if (user_access('access tinymce')) {
-    // Set resizable to false to avoid drupal.js resizable function from taking control of the textarea
-    $type['textarea'] = array('#process' => array('tinymce_process_textarea' => array()), '#resizable' => TRUE);
+    // Let TinyMCE potentially process each textarea.
+    $type['textarea'] = array('#process' => array('tinymce_process_textarea' => array()));
   }
 
   return $type;
@@ -85,6 +85,9 @@ function tinymce_process_textarea($element) {
   // we're gonna render tinymce.
   if (!$profile_name) {
     $profile_name = db_result(db_query('SELECT s.name FROM {tinymce_settings} s INNER JOIN {tinymce_role} r ON r.name = s.name WHERE r.rid IN (%s)', implode(',', array_keys($user->roles))));
+    if (!$profile_name) {
+      return $element;
+    }
   }
   $profile = tinymce_profile_load($profile_name);
   $init = tinymce_config($profile);
@@ -96,8 +99,6 @@ function tinymce_process_textarea($element) {
 
     // If $init array is empty no need to execute rest of code since there are no textareas to theme with TinyMCE
     if (count($init) < 1) {
-      // we set this textarea to use drupal resizable since tinymce won't be controling this textarea
-      $element['#resizable'] = TRUE;
       return $element;
     }
 
@@ -215,9 +216,8 @@ EOD;
       // Make sure to append to #suffix so it isn't completely overwritten
       $element['#suffix'] .= $wysiwyg_link;
     }
-  }  
-  else {
-    $element['#resizable'] = TRUE;
+    // Set resizable to false to avoid drupal.js resizable function from taking control of the textarea
+    $element['#resizable'] = FALSE;
   }
 
   return $element;
