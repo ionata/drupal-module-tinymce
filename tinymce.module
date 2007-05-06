@@ -257,7 +257,7 @@ function tinymce_user($type, &$edit, &$user, $category = NULL) {
         '#type' => 'select', 
         '#title' => t('Default state'),
         '#default_value' => isset($user->tinymce_status) ? $user->tinymce_status : (isset($profile->settings['default']) ? $profile->settings['default'] : 'false'), 
-        '#options' => array('false' => 'false', 'true' => 'true'), 
+        '#options' => array('false' => t('disabled'), 'true' => t('enabled')), 
         '#description' => t('Should rich-text editing be enabled or disabled by default in textarea fields?')
       );    
      
@@ -698,7 +698,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Default state'),
     '#default_value' => $edit->settings['default'] ? $edit->settings['default'] : 'false', 
-    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#options' => array('false' => t('disabled'), 'true' => t('enabled')), 
     '#description' => t('Default editor state for users in this profile. Users will be able to override this state if the next option is enabled.'),
   );
   
@@ -706,7 +706,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Allow users to choose default'),
     '#default_value' => $edit->settings['user_choose'] ? $edit->settings['user_choose'] : 'false', 
-    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#options' => array('false' => t('false'), 'true' => t('true')), 
     '#description' => t('If allowed, users will be able to choose their own TinyMCE default state by visiting their profile page.'),
   );
   
@@ -714,7 +714,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Show disable/enable rich text editor toggle'),
     '#default_value' => $edit->settings['show_toggle'] ? $edit->settings['show_toggle'] : 'true', 
-    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#options' => array('false' => t('false'), 'true' => t('true')), 
     '#description' => t('Whether or not to show the disable/enable rich text editor toggle below the textarea. If false, editor defaults to the global default or user default (see above).'),
   );
   
@@ -730,7 +730,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Language'), 
     '#default_value' => $edit->settings['language'] ? $edit->settings['language'] : 'en', 
-    '#options' => drupal_map_assoc(array('ar', 'ca', 'cs', 'cy', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'fr_ca', 'he', 'hu', 'is', 'it', 'ja', 'ko', 'nb', 'nl', 'nn', 'pl', 'pt', 'pt_br', 'ru', 'ru_KOI8-R', 'ru_UTF-8', 'sk', 'sv', 'th', 'zh_cn', 'zh_tw', 'zh_tw_utf8')), 
+    '#options' => drupal_map_assoc(array('ar', 'ca', 'cs', 'cy', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'fr_ca', 'he', 'hu', 'is', 'it', 'ja', 'ko', 'nb', 'nl', 'nn', 'pl', 'pt', 'pt_br', 'ru', 'ru_KOI8-R', 'ru_UTF-8', 'si', 'sk', 'sv', 'th', 'zh_cn', 'zh_tw', 'zh_tw_utf8')), 
     '#description' => t('The language for the TinyMCE interface. Language codes based on the <a href="http://www.loc.gov/standards/iso639-2/englangn.html">ISO-639-2</a> format.')
   );
   
@@ -738,7 +738,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Safari browser warning'),
     '#default_value' => $edit->settings['safari_message'] ? $edit->settings['safari_message'] : 'false', 
-    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#options' => array('false' => t('false'), 'true' => t('true')), 
     '#description' => t('TinyMCE support for the Safari web browser is experimental and a warning message is displayed when that browser is detected. You can disable this message here.')
   );
 
@@ -848,7 +848,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Toolbar location'), 
     '#default_value' => $edit->settings['toolbar_loc'], 
-    '#options' => array('bottom' => 'bottom', 'top' => 'top'), 
+    '#options' => array('bottom' => t('bottom'), 'top' => t('top')), 
     '#description' => t('Show toolbar at the top or bottom of the editor area?')
   );
   
@@ -856,7 +856,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Toolbar alignment'), 
     '#default_value' => $edit->settings['toolbar_align'], 
-    '#options' => array('center' => 'center', 'left' => 'left', 'right' => 'right'), 
+    '#options' => array('center' => t('center'), 'left' => t('left'), 'right' => t('right')), 
     '#description' => t('Align tool icons left, center, or right within the toolbar.')
   );
   
@@ -864,7 +864,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Path location'), 
     '#default_value' => $edit->settings['path_loc'] ? $edit->settings['path_loc'] : 'bottom', 
-    '#options' => array('none' => 'none', 'top' => 'top', 'bottom' => 'bottom'), 
+    '#options' => array('none' => t('none'), 'top' => t('top'), 'bottom' => t('bottom')), 
     '#description' => t('Path to html elements (i.e. "body>table>tr>td"). Show at top, bottom, or not at all.')
   );
   
@@ -872,7 +872,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Enable resizing button'), 
     '#default_value' => isset($edit->settings['resizing']) ? $edit->settings['resizing'] : 'true',
-    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#options' => array('false' => t('false'), 'true' => t('true')), 
     '#description' => t(' This option gives you the ability to enable/disable the resizing button. If enabled the <strong>Path location toolbar</strong> must be set to "top" or "bottom" in order to display the resize icon.')
   );
   
@@ -896,7 +896,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Verify HTML'), 
     '#default_value' => $edit->settings['verify_html'], 
-    '#options' => array('true' => 'true', 'false' => 'false'), 
+    '#options' => array('false' => t('false'), 'true' => t('true')), 
     '#description' => t('Should the HTML contents be verified or not? Verifying will strip &lt;head&gt tags, so choose false if you will be editing full page HTML.')
   );
   
@@ -904,7 +904,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Preformatted'), 
     '#default_value' => $edit->settings['preformatted'], 
-    '#options' => array('false' => 'false', 'true' => 'true'), 
+    '#options' => array('false' => t('false'), 'true' => t('true')), 
     '#description' => t('If this option is set to true, the editor will insert TAB characters on tab and preserve other whitespace characters just like a PRE HTML element does.')
   );
   
@@ -912,7 +912,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Convert &lt;font&gt; tags to styles'), 
     '#default_value' => $edit->settings['convert_fonts_to_spans'], 
-    '#options' => array('true' => 'true', 'false' => 'false'), 
+    '#options' => array('true' => t('true'), 'false' => t('false')), 
     '#description' => t('If you set this option to true, font size, font family, font color and font background color will be replaced by inline styles.')
   );
 
@@ -927,7 +927,7 @@ function tinymce_profile_form_build($edit) {
     '#type' => 'select', 
     '#title' => t('Editor CSS'), 
     '#default_value' => $edit->settings['css_setting'] ? $edit->settings['css_setting'] : 'theme', 
-    '#options' => array('theme' => 'use theme css', 'self' => 'define css', 'none' => 'tinyMCE default'), 
+    '#options' => array('theme' => t('use theme css'), 'self' => t('define css'), 'none' => t('tinyMCE default')), 
     '#description' => t('Defines the CSS to be used in the editor area.<br />use theme css - load style.css from current site theme.<br/>define css - enter path for css file below.<br />tinyMCE default - uses default CSS from editor.')
   );
   
