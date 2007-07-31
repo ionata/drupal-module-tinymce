@@ -24,7 +24,7 @@ NOTE: During this installation process you'll be asked to also
    directory.
 
    
-2. Download TinyMCE 2.0 from
+2. Download TinyMCE 2.1 from
 
      http://tinymce.moxiecode.com/
 
@@ -52,7 +52,7 @@ NOTE: During this installation process you'll be asked to also
 
      http://tinymce.moxiecode.com/download.php
 
-   Place the tiny_mce_gzip.php file in 
+   Place the tiny_mce_gzip.js and tiny_mce_gzip.php files in 
    
      modules/tinymce/tinymce/jscripts/tiny_mce
 

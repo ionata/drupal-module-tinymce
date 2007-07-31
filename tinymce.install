@@ -17,24 +17,24 @@ function tinymce_install() {
     case 'mysqli':
       db_query("CREATE TABLE {tinymce_settings} (
                 name varchar(128) NOT NULL default '',
-                settings text NOT NULL default '',
+                settings text,
                 PRIMARY KEY (name)
                ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
-  
+
       db_query("CREATE TABLE {tinymce_role} (
                 name varchar(128) NOT NULL default '',
                 rid tinyint(3) unsigned NOT NULL default '0',
                 PRIMARY KEY (name,rid)
                ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
       break;
-      
+
     case 'pgsql':
       db_query("CREATE TABLE {tinymce_settings} (
                 name varchar(128) NOT NULL default '',
-                settings text NOT NULL default '',
+                settings text,
                 PRIMARY KEY (name)
                );");
-     
+
       db_query("CREATE TABLE {tinymce_role} (
                 name varchar(128) NOT NULL default '',
                 rid smallint NOT NULL default '0',
@@ -46,4 +46,12 @@ function tinymce_install() {
 
 function tinymce_update_1() {
   return _system_update_utf8(array('tinymce_settings', 'tinymce_role'));
+}
+
+/**
+ * Implementation of hook_uninstall()
+ */
+function tinymce_uninstall() {
+  db_query('DROP TABLE {tinymce_settings}');
+  db_query('DROP TABLE {tinymce_role}');
 }
