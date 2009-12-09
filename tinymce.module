@@ -614,7 +614,7 @@ function tinymce_config($profile) {
     }
   }
 
-  if ($settings['css_classes']) $init['theme_advanced_styles'] = $settings['css_classes'];
+  if ($settings['css_classes']) $init['theme_advanced_styles'] = str_replace('"','',$settings['css_classes']);
 
   if ($settings['css_setting'] == 'theme') {
     $css = $themepath . 'style.css';
@@ -1048,7 +1048,7 @@ function tinymce_profile_overview() {
     $roles = user_roles();
     $header = array(t('Profile'), t('Roles'), t('Operations'));
     foreach ($profiles as $p) {
-      $rows[] = array(array('data' => $p->name, 'valign' => 'top'), array('data' => implode("<br />\n", $p->rids)), array('data' => l(t('edit'), 'admin/settings/tinymce/edit/'. urlencode($p->name)) . ' '. l(t('delete'), 'admin/settings/tinymce/delete/'. urlencode($p->name)), 'valign' => 'top'));
+      $rows[] = array(array('data' => filter_xss($p->name), 'valign' => 'top'), array('data' => implode("<br />\n", $p->rids)), array('data' => l(t('edit'), 'admin/settings/tinymce/edit/'. urlencode($p->name)) . ' '. l(t('delete'), 'admin/settings/tinymce/delete/'. urlencode($p->name)), 'valign' => 'top'));
     }
     $output .= theme('table', $header, $rows);
     $output .= t('<p><a href="!create-profile-url">Create new profile</a></p>', array('!create-profile-url' => url('admin/settings/tinymce/add')));
