@@ -18,6 +18,10 @@
 function tinymce_install() {
   // Create tables.
   drupal_install_schema('tinymce');
+  // Create default profile
+  db_query("INSERT {tinymce_settings} (name, settings) VALUES ('%s', '%s')", 'default profile', 'a:29:{s:8:"old_name";s:15:"default profile";s:4:"name";s:15:"default profile";s:4:"rids";a:1:{i:2;s:1:"2";}s:7:"default";s:4:"true";s:11:"user_choose";s:4:"true";s:11:"show_toggle";s:4:"true";s:5:"theme";s:8:"advanced";s:8:"language";s:2:"en";s:14:"safari_message";s:5:"false";s:6:"access";s:1:"1";s:12:"access_pages";s:25:"node/*
+user/*
+comment/*";s:7:"buttons";a:16:{s:12:"default-bold";s:1:"1";s:14:"default-italic";s:1:"1";s:17:"default-underline";s:1:"1";s:21:"default-strikethrough";s:1:"1";s:19:"default-justifyleft";s:1:"1";s:21:"default-justifycenter";s:1:"1";s:15:"default-bullist";s:1:"1";s:15:"default-numlist";s:1:"1";s:15:"default-outdent";s:1:"1";s:14:"default-indent";s:1:"1";s:12:"default-link";s:1:"1";s:14:"default-unlink";s:1:"1";s:13:"default-image";s:1:"1";s:12:"imagemanager";s:1:"1";s:15:"paste-pastetext";s:1:"1";s:15:"paste-pasteword";s:1:"1";}s:11:"toolbar_loc";s:3:"top";s:13:"toolbar_align";s:4:"left";s:8:"path_loc";s:4:"none";s:8:"resizing";s:5:"false";s:13:"block_formats";s:31:"p,address,pre,h1,h2,h3,h4,h5,h6";s:11:"verify_html";s:5:"false";s:12:"preformatted";s:5:"false";s:22:"convert_fonts_to_spans";s:4:"true";s:17:"remove_linebreaks";s:4:"true";s:23:"apply_source_formatting";s:4:"true";s:11:"css_setting";s:4:"none";s:8:"css_path";s:0:"";s:11:"css_classes";s:0:"";s:2:"op";s:14:"Update profile";s:13:"form_build_id";s:37:"form-21cb07f003badeede590c7987adde76d";s:10:"form_token";s:32:"3170db026d02269919567e1aa7c3818d";s:7:"form_id";s:26:"tinymce_profile_form_build";}');
 }
 
 function tinymce_update_1() {

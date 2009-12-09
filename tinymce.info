@@ -7,3 +7,10 @@ core = "6.x"
 project = "tinymce"
 datestamp = "1197850180"
 
+
+; Information added by drupal.org packaging script on 2008-03-31
+version = "6.x-1.1-dev"
+core = "6.x"
+project = "tinymce"
+datestamp = "1206987314"
+

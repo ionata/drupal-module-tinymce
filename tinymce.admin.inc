@@ -84,10 +84,10 @@ function tinymce_profile_form_build($form_state, $edit) {
     if (!$orig_roles) {
       drupal_set_message(t('You must <a href="!access-control-url">assign</a> at least one role with the \'access tinymce\' permission before creating a profile.', array('!access-control-url' => url('admin/user/permissions'))), 'error');
     }
-    else if (!$roles) {
+    elseif (!$roles) {
       drupal_set_message(t('You will not be allowed to create a new profile since all user roles have already been assigned profiles. Either remove an existing tinymce profile from at least one role or assign another role the \'access tinymce\' permission.'), 'error');
     }
-    else if (count($orig_roles) != count($roles)) {
+    elseif (count($orig_roles) != count($roles)) {
       drupal_set_message(t('Not all user roles are shown since they already have tinymce profiles. You must first unassign profiles in order to add them to a new one.'));
     }
     $btn = t('Create profile');

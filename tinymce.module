@@ -13,13 +13,12 @@
  */
 function tinymce_menu() {
   $items['admin/settings/tinymce'] = array(
-    'title' => 'TinyMCE',
-    'description' => 'Configure the rich editor.',
-    'page callback' => 'tinymce_admin',
-    'access arguments' => array('administer tinymce'),
-    'file' => 'tinymce.admin.inc',
+  'title' => 'TinyMCE',
+  'description' => 'Configure the rich editor.',
+  'page callback' => 'tinymce_admin',
+  'access arguments' => array('administer tinymce'),
+  'file' => 'tinymce.admin.inc',
   );
-
   return $items;
 }
 
@@ -28,9 +27,9 @@ function tinymce_menu() {
  */
 function tinymce_theme() {
   return array(
-    // This button table is used in TinyMCE admininstration.
-    'tinymce_admin_button_table' => array('arguments' => array('form')),
-    'tinymce_theme' => array('arguments' => array('init', 'textarea_name', 'theme_name', 'is_running'))
+  // This button table is used in TinyMCE admininstration.
+  'tinymce_admin_button_table' => array('arguments' => array('form')),
+  'tinymce_theme' => array('arguments' => array('init', 'textarea_name', 'theme_name', 'is_running'))
   );
 }
 
@@ -86,9 +85,9 @@ function tinymce_elements() {
  * Implementation of hook_form_alter()
  */
 function tinymce_form_alter(&$form, &$form_state) {
-	// disable 'teaser' textarea
-	unset($form['body_field']['teaser_js']);
-	$form['body_field']['teaser_include'] = array();
+  // disable 'teaser' textarea
+  unset($form['body_field']['teaser_js']);
+  $form['body_field']['teaser_include'] = array();
 }
 
 /**
@@ -118,7 +117,7 @@ function tinymce_process_textarea($element) {
   if (_tinymce_page_match($profile)) {
     // Merge user-defined TinyMCE settings.
     $init = (array) theme('tinymce_theme', $init, $textarea_name, $init['theme'], $is_running);
-	
+  
     // If $init array is empty no need to execute rest of code since there are no textareas to theme with TinyMCE
     if (count($init) < 1) {
       return $element;
@@ -161,8 +160,8 @@ $js_toggle = <<<EOD
     link = document.getElementById(linkid);
     img_assist = document.getElementById('img_assist-link-'+ id);
 
-    if (tinyMCE.getEditorId(element.id) == null) {
-      tinyMCE.addMCEControl(element, element.id);
+    if (tinyMCE.get(element.id) == null) {
+      tinyMCE.execCommand('mceAddControl',false,element.id);
       element.togg = 'on';
       link.innerHTML = '$disable';
       link.href = "javascript:mceToggle('" +id+ "', '" +linkid+ "');";
@@ -171,7 +170,7 @@ $js_toggle = <<<EOD
       link.blur();
     }
     else {
-      tinyMCE.removeMCEControl(tinyMCE.getEditorId(element.id));
+      tinyMCE.execCommand('mceRemoveControl',false,element.id);
       element.togg = 'off';
       link.innerHTML = '$enable';
       link.href = "javascript:mceToggle('" +id+ "', '" +linkid+ "');";
@@ -195,10 +194,10 @@ $wysiwyg_link = <<<EOD
   if (img_assist) {
     var img_assist_default_link = img_assist.innerHTML;
     if ('$img_assist_link' == 'yes') {
-      img_assist.innerHTML = tinyMCE.getEditorId('edit-$textarea_name') == null ? '' : img_assist_default_link;
+      img_assist.innerHTML = tinyMCE.get('edit-$textarea_name') == null ? '' : img_assist_default_link;
     }
     else {
-      img_assist.innerHTML = tinyMCE.getEditorId('edit-$textarea_name') == null ? img_assist_default_link : '';
+      img_assist.innerHTML = tinyMCE.get('edit-$textarea_name') == null ? img_assist_default_link : '';
     }
   }
   if (typeof(document.execCommand) == 'undefined') {
@@ -225,6 +224,10 @@ EOD;
         // if tinymce filemanager is installed
         drupal_add_js($tinymce_mod_path .'/tinymce/jscripts/tiny_mce/plugins/filemanager/jscripts/mcfilemanager.js');
       }
+      // Add integration with IMCE if available.
+      if (module_exists('imce') && imce_access()) {
+        drupal_add_js("function mceImageBrowser(fid, url, type, win) { win.open(Drupal.settings.basePath + '?q=imce&app=TinyMCE|url@'+ fid, '', 'width=760, height=560, resizable=1'); }", 'inline');
+      }
       // TinyMCE Compressor 1.0.9 and greater
       if (file_exists($tinymce_mod_path .'/tinymce/jscripts/tiny_mce/tiny_mce_gzip.js')) {
         drupal_add_js($tinymce_mod_path .'/tinymce/jscripts/tiny_mce/tiny_mce_gzip.js');
@@ -244,6 +247,12 @@ EOD;
     }
     // Load a TinyMCE init for each textarea.
     if ($init) drupal_add_js($tinymce_invoke, 'inline');
+
+    //settings are saved as strings, not booleans
+    if ($profile->settings['show_toggle'] == 'true') {
+      // Make sure to append to #suffix so it isn't completely overwritten
+      $element['#suffix'] .= $wysiwyg_link;
+    }
 
     // Set resizable to false to avoid drupal.js resizable function from taking control of the textarea
     $element['#resizable'] = FALSE;
@@ -384,7 +393,7 @@ function _tinymce_get_themes() {
   if (!$themes) {
     $theme_loc = drupal_get_path('module', 'tinymce') .'/tinymce/jscripts/tiny_mce/themes/';
     if (is_dir($theme_loc) && $dh = opendir($theme_loc)) {
-      while (($file = readdir($dh)) !== false) {
+      while (($file = readdir($dh)) !== FALSE) {
         if (!in_array($file, array('.', '..', 'CVS')) && is_dir($theme_loc . $file)) {
           $themes[$file] = $file;
         }
@@ -444,28 +453,16 @@ function _tinymce_get_buttons($skip_metadata = TRUE) {
            $metadata[$name]['buttons'] = array_merge((array) $metadata[$name]['button'], $plugin[$k]);
         }
       }
-	  
-	  // add list of default buttons
-	  // source: http://wiki.moxiecode.com/index.php/TinyMCE:Control_reference
-	  $name = 'default'; 
-	  $buttons = array(
-	  	"bold", "italic", "underline", "strikethrough", 
-	  	"justifyleft", "justifycenter", "justifyright", "justifyfull", 
-	  	"bullist", "numlist", 
-	  	"outdent", "indent", 
-	  	"cut", "copy", "paste", 
-	  	"undo", "redo", 
-	  	"link", "unlink", 
-	  	"image", "cleanup", "help", "code", "hr", 
-	  	"removeformat", "formatselect", "fontselect", "fontsizeselect", "styleselect", 
-	  	"sub", "sup", 
-	  	"forecolor", "backcolor", "forecolorpicker", "backcolorpicker", 
-	  	"charmap", "visualaid", 
-	  	"anchor", "newdocument", "blockquote"
-	  );
-	  foreach ($buttons as $button) {
-		  $metadata['default']['buttons'][] = $button;
-	  }
+    
+    // add list of default buttons
+    // source: http://wiki.moxiecode.com/index.php/TinyMCE:Control_reference
+    $name = 'default'; 
+    $buttons = array(
+      "bold", "italic", "underline", "strikethrough", "justifyleft", "justifycenter", "justifyright", "justifyfull", "bullist", "numlist", "outdent", "indent", "link", "unlink", "image", "cleanup", "help", "code", "hr", "removeformat", "sub", "sup", "charmap", "visualaid", "anchor", "blockquote"
+    );
+    foreach ($buttons as $button) {
+      $metadata['default']['buttons'][] = $button;
+    }
     }
     return $metadata;
   }
@@ -492,7 +489,6 @@ function tinymce_config($profile) {
 
   // Is tinymce on by default?
   $status = tinymce_user_get_status($user, $profile);
-  $status = 'true';
 
   $init['mode']               = $status == 'true' ? 'exact' : 'none';
 //  $init['mode']               = "textareas";
@@ -519,6 +515,10 @@ function tinymce_config($profile) {
   if (is_dir($tinymce_mod_path .'/tinymce/jscripts/tiny_mce/plugins/filemanager/') && user_access('access tinymce filemanager')) {
     // we probably need more security than this
     $init['file_browser_callback'] = "mcImageManager.filebrowserCallBack";
+  }
+  // Add support for IMCE if available.
+  if (module_exists('imce') && imce_access()) {
+    $init['file_browser_callback'] = 'mceImageBrowser';
   }
 
   if ($init['theme'] == 'advanced') {
@@ -562,7 +562,7 @@ function tinymce_config($profile) {
               // $mce_value is an array for extended_valid_elements so just grab the first element in the array (never more than one)
               $init[$mce_key][] = $mce_value[0];
             }
-            else if (!strstr($mce_key, 'theme_advanced_buttons')) {
+            elseif (!strstr($mce_key, 'theme_advanced_buttons')) {
               $init[$mce_key] = $mce_value;
             }
           }
@@ -582,69 +582,69 @@ function tinymce_config($profile) {
       if (!isset($init['theme_advanced_buttons2'])) $init['theme_advanced_buttons2'] = array();
       if (!isset($init['theme_advanced_buttons3'])) $init['theme_advanced_buttons3'] = array();
 
-	  // bweh - this isn't right!
-	  // some buttons should go in a specific order:
-	  
-	  // row 1
-	  // - cut
-	  // - copy
-	  // - paste
-	  // - pasteword
-	  // - separator
-	  // - undo
-	  // - redo
-	  // - separator
-	  // - bold
-	  // - italic
-	  // - underline
-	  // - separator
-	  
-	  // row 2
-	  // - formatselect
-	  // - fontselect
-	  // - fontsizeselect
-	  // - separator
-	  // - justifyleft
-	  // - justifycenter
-	  // - justifyright
-	  // - justifyfull
-	  // - separator
-	  // - numlist
-	  // - bullist
-	  // - indent
-	  // - outdent
-	  
-	  $buttons = array_merge($init['theme_advanced_buttons1'], $init['theme_advanced_buttons2'], $init['theme_advanced_buttons3']);
-	  $init['theme_advanced_buttons1'] = array();
-	  $init['theme_advanced_buttons2'] = array();
-	  $init['theme_advanced_buttons3'] = array();
-	  
-	  $row[] = array( array('newdocument', 'save'), array('bold', 'italic', 'underline'), array('undo', 'redo'), array('cut', 'copy', 'paste', 'pasteword'),  array('link', 'unlink'), array('image', 'charmap'), array('code') );
-	  $row[] = array( array('formatselect', 'fontselect', 'fontsizeselect'), array('justifyleft', 'justifycenter', 'justifyright', 'justifyfull'), array('numlist', 'bullist', 'indent', 'outdent') );
+    // bweh - this isn't right!
+    // some buttons should go in a specific order:
+    
+    // row 1
+    // - cut
+    // - copy
+    // - paste
+    // - pasteword
+    // - separator
+    // - undo
+    // - redo
+    // - separator
+    // - bold
+    // - italic
+    // - underline
+    // - separator
+    
+    // row 2
+    // - formatselect
+    // - fontselect
+    // - fontsizeselect
+    // - separator
+    // - justifyleft
+    // - justifycenter
+    // - justifyright
+    // - justifyfull
+    // - separator
+    // - numlist
+    // - bullist
+    // - indent
+    // - outdent
+    
+    $buttons = array_merge($init['theme_advanced_buttons1'], $init['theme_advanced_buttons2'], $init['theme_advanced_buttons3']);
+    $init['theme_advanced_buttons1'] = array();
+    $init['theme_advanced_buttons2'] = array();
+    $init['theme_advanced_buttons3'] = array();
+    
+    $row[] = array( array('newdocument', 'save'), array('bold', 'italic', 'underline'), array('undo', 'redo'), array('cut', 'copy', 'paste', 'pasteword'),  array('link', 'unlink'), array('image', 'charmap'), array('code') );
+    $row[] = array( array('formatselect', 'fontselect', 'fontsizeselect'), array('justifyleft', 'justifycenter', 'justifyright', 'justifyfull'), array('numlist', 'bullist', 'indent', 'outdent') );
 
-	  foreach ($row as $r_index=>$r) {
-		  $row_buttons = array();
-		  foreach ($r as $rg_index=>$rowgroup) {
-			  
- 			  $selected = array_intersect($rowgroup, $buttons);
-			  
-			  if (count($selected)>0) {
-				if (count($row_buttons)>0) {
-					$row_buttons[] = "separator";
-				}
-				$row_buttons = array_merge($row_buttons, $selected);
-			  }
-			  
-			  $buttons = array_diff($buttons, $selected);
-		  }
-		  $init['theme_advanced_buttons' . ($r_index+1)] = $row_buttons;
-	  }
-	  
-	  if (count($buttons)>0) {
-		  // some buttons are left -> append them to row 3
-		  $init['theme_advanced_buttons3'] = array_merge($init['theme_advanced_buttons3'], $buttons);
-	  }
-	  
+    foreach ($row as $r_index => $r) {
+      $row_buttons = array();
+      foreach ($r as $rg_index => $rowgroup) {
+        
+         $selected = array_intersect($rowgroup, $buttons);
+        
+        if (count($selected)>0) {
+        if (count($row_buttons)>0) {
+          $row_buttons[] = "separator";
+        }
+        $row_buttons = array_merge($row_buttons, $selected);
+        }
+        
+        $buttons = array_diff($buttons, $selected);
+      }
+      $init['theme_advanced_buttons' . ($r_index+1)] = $row_buttons;
+    }
+    
+    if (count($buttons)>0) {
+      // some buttons are left -> append them to row 3
+      $init['theme_advanced_buttons3'] = array_merge($init['theme_advanced_buttons3'], $buttons);
+    }
+    
       $min_btns = 5; // Minimum number of buttons per row.
       $num1 = count($init['theme_advanced_buttons1']);
       $num2 = count($init['theme_advanced_buttons2']);
@@ -682,7 +682,7 @@ function tinymce_config($profile) {
       $init['content_css'] = $host . $css;
     }
   }
-  else if ($settings['css_setting'] == 'self') {
+  elseif ($settings['css_setting'] == 'self') {
     $init['content_css'] = str_replace(array('%h', '%t'), array($host, $themepath), $settings['css_path']);
   }
 
@@ -697,12 +697,9 @@ function tinymce_profile_load($name = '') {
 
   if (!$profiles) {
     $roles = user_roles();
-	
-	$result = db_query('SELECT * FROM {tinymce_settings}');
+    $result = db_query('SELECT * FROM {tinymce_settings}');
     while ($data = db_fetch_object($result)) {
-		
       $data->settings = unserialize($data->settings);
-	  
       $result2 = db_query("SELECT rid FROM {tinymce_role} WHERE name = '%s'", $data->name);
       $role = array();
       while ($r = db_fetch_object($result2)) {
@@ -731,25 +728,24 @@ function tinymce_profile_load($name = '') {
 function _tinymce_page_match($edit) {
   $page_match = FALSE;
 
-  // This piece of code sometimes fires on textareas that are just 
-  // plain HTML; so I disabled it. I want my, I want my, I want my MCE....
-
-//  // Kill TinyMCE if we're editing a textarea with PHP in it!
-//  // PHP input formats are #2 in the filters table.
-//  if (is_numeric(arg(1)) && arg(2) == 'edit') {
-//    $node = node_load(arg(1));
-//    if ($node->format == 2) {
-//      return FALSE;
-//    }
-//  }
+ if (is_numeric(arg(1)) && arg(2) == 'edit') {
+    $node = node_load(arg(1));
+    $result = db_query("SELECT format FROM {filters} WHERE module = 'php'");
+    while ($data = db_fetch_object($result)){
+      if ($node->format == $data->format) {
+        return FALSE;
+      }
+    }
+    
+  }
 
   if ($edit->settings['access_pages']) {
-	  
+    
     // If the PHP option wasn't selected
     if ($edit->settings['access'] < 2) {
       $path = drupal_get_path_alias($_GET['q']);
       $regexp = '/^('. preg_replace(array('/(\r\n?|\n)/', '/\\\\\*/', '/(^|\|)\\\\<front\\\\>($|\|)/'), array('|', '.*', '\1'. preg_quote(variable_get('site_frontpage', 'node'), '/') .'\2'), preg_quote($edit->settings['access_pages'], '/')) .')$/';
-	  
+    
       $page_match = !($edit->settings['access'] xor preg_match($regexp, $path));
     }
     else {
