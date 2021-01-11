@@ -1,0 +1,6 @@
+name: Alternative editors
+description: "Provide alternative editors such as TinyMCE and CKEditor 5."
+core_version_requirement: ^8.8 || ^9
+type: module
+dependencies:
+  - drupal:editor

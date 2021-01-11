@@ -1,0 +1,11 @@
+alternative_editors.tinymce_settings_form:
+  title: 'TinyMCE settings'
+  description: 'Configuration for TinyMCE.'
+  route_name: alternative_editors.tinymce_settings_form
+  parent: filter.admin_overview
+
+alternative_editors.ckeditor_settings_form:
+  title: 'CKEditor settings'
+  description: 'Configuration for CKEditor.'
+  route_name: alternative_editors.ckeditor_settings_form
+  parent: filter.admin_overview

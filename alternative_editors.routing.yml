@@ -1,0 +1,15 @@
+alternative_editors.tinymce_settings_form:
+  path: '/admin/config/content/formats/tinymce'
+  defaults:
+    _form: '\Drupal\alternative_editors\Form\TinymceSettingsForm'
+    _title: 'TinyMCE settings'
+  requirements:
+    _permission: 'administer filters'
+
+alternative_editors.ckeditor_settings_form:
+  path: '/admin/config/content/formats/ckeditor'
+  defaults:
+    _form: '\Drupal\alternative_editors\Form\CkeditorSettingsForm'
+    _title: 'CKEDitor settings'
+  requirements:
+    _permission: 'administer filters'
