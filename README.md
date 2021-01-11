@@ -77,13 +77,12 @@ Previous maintainers:
 * nedjo http://drupal.org/user/4481
 * Steve McKenzie http://drupal.org/user/45890
 * ufku http://drupal.org/user/9910
-* Matt Westgate <drupal AT asitis DOT org> and
-* Jeff Robbins <robbins AT jjeff DOT com>
+* Matt Westgate <drupal AT asitis DOT org> and Jeff Robbins <robbins AT jjeff DOT com>
 * Richard Bennett <richard.b AT gritechnologies DOT com>
 
 This project has been sponsored by:
-* Actency
-  Actency is actively engaged in the development and promotion of Drupal.
+* Actency:
+  We are actively engaged in the development and promotion of Drupal.
   Within the community, we share our experience and communicate our passion, in
   particular on the occasion of major events such as Drupagora, DrupalCamp,
   DrupalCon. In addition, we organized the first MeetUp in eastern France, in
