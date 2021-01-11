@@ -82,7 +82,7 @@ class TinyMCE extends EditorBase implements ContainerFactoryPluginInterface {
    */
   public function getLibraries(Editor $editor) {
     return [
-      'alternative_editors/tinymce',
+      'tinymce/tinymce',
     ];
   }
 
@@ -93,11 +93,34 @@ class TinyMCE extends EditorBase implements ContainerFactoryPluginInterface {
     $editor = $form_state->get('editor');
     $settings = $editor->getSettings();
 
+    $default_Settings = [
+      'plugins' => 'print preview importcss searchreplace autolink autosave save directionality visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help charmap quickbars emoticons',
+      'mobile' => [
+        'plugins' => 'print preview importcss tinydrive searchreplace autolink autosave save directionality visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount textpattern noneditable help charmap quickbars emoticons',
+      ],
+      'menubar' => 'file edit view insert format tools table tc help',
+      'toolbar' => 'undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen preview save print | image media link anchor codesample | ltr rtl',
+      'autosave_ask_before_unload' => TRUE,
+      'autosave_interval' => '30s',
+      'autosave_prefix' => '{path}{query}-{id}-',
+      'autosave_restore_when_empty' => FALSE,
+      'autosave_retention' => '2m',
+      'image_advtab' => TRUE,
+      'importcss_append' => TRUE,
+      'image_caption' => TRUE,
+      'quickbars_selection_toolbar' => 'bold italic | quicklink h2 h3 blockquote quickimage quicktable',
+      'noneditable_noneditable_class' => 'mceNonEditable',
+      'toolbar_mode' => 'sliding',
+      'contextmenu' => 'link image imagetools table',
+      'skin' => 'oxide',
+      'content_css' => 'default',
+    ];
+
     $form['tinymce_editor_settings'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Editor settings'),
-      '#default_value' => $settings['tinymce_editor_settings'],
-      '#description' => $this->t('Custom settings for the editor'),
+      '#default_value' => $settings['tinymce_editor_settings'] ?? Json::encode($default_Settings),
+      '#description' => $this->t('Custom settings for the editor. Please see <a href=":example" target="_blank">this page for additional documentation</a>.<br/>Note that you need to register your domain (have an API key) to remove the notice, <a href=":api-key" target="_blank">see more details here</a>.', [':example' => 'https://www.tiny.cloud/docs/demo/full-featured/', ':api-key' => 'https://www.tiny.cloud/docs/quick-start/#step3addyourapikey']),
       '#rows' => 20,
     ];
 

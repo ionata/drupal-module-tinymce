@@ -14,7 +14,7 @@ class TinymceSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'alternative_editors_tinymce_settings_form';
+    return 'tinymce_settings_form';
   }
 
   /**
@@ -43,7 +43,7 @@ class TinymceSettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('tinymce.min.js full path'),
       '#default_value' => $config->get('tinymce_javascript_path'),
-      '#description' => $this->t('The full path to tinymce.min.js<br>Example:<ul><li>Self hosted: /libraries/tinymce/tinymce.min.js</li><li>CDN hosted: https://cdn.tiny.cloud/1/{api-key}/tinymce/5/tinymce.min.js</li></ul>'),
+      '#description' => $this->t('The full path to tinymce.min.js<br>Example:<ul><li>Self hosted: /libraries/tinymce/tinymce.min.js</li><li>CDN hosted (free): https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js</li><li>CDN hosted (Premium): https://cdn.tiny.cloud/1/{api-key}/tinymce/5/tinymce.min.js</li></ul>'),
     ];
 
     $form['submit'] = [

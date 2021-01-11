@@ -8,6 +8,30 @@
 use Drupal\Core\Url;
 
 /**
+ * Implements hook_library_info_build().
+ */
+function tinymce_library_info_build() {
+  $libraries = [];
+
+  $libraries['tinymce'] = [
+    'js' => [
+      'js/tinymce.js' => [],
+    ],
+    'dependencies' => [
+      'editor/drupal.editor',
+    ],
+  ];
+  $config = \Drupal::config('tinymce.settings');
+  $selfHosted = $config->get('tinymce_self_hosted');
+  $jsPath = $config->get('tinymce_javascript_path');
+  $libraries['tinymce']['js'][$jsPath] = $selfHosted
+    ? ['minified' => TRUE]
+    : ['minified' => TRUE, 'external' => TRUE];
+
+  return $libraries;
+}
+
+/**
  * Implementation of hook_help().
  */
 function tinymce_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
@@ -21,87 +45,10 @@ function tinymce_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $rou
       $output .= '<dt>' . t('Enabling TinyMCE for a text format') . '</dt>';
       $output .= '<dd>' . t('On the <a href=":formats">Text formats and editors page</a> you can see which text editor is associated with each text format. You can change this by clicking on the <em>Configure</em> link, and then choosing TinyMCE from the <em>Text editor</em> drop-down list. TinyMCE will then be displayed with any text field for which this text format is chosen.', [':formats' => Url::fromRoute('filter.admin_overview')->toString()]) . '</dd>';
       $output .= '<dt>' . t('Configuring TinyMCE') . '</dt>';
-      $output .= '<dd>' . t('Once TinyMCE is associated with a text format, you can configure it by clicking on the <em>Configure</em> link for this format. Depending on the specific text editor, you can configure it by defining a json object like the one passed to TinyMCE JS init() method. For details, see the JS tabs on <a href=":example" target="_blank">this page</a> or the example bellow.', [':example' => 'https://www.tiny.cloud/docs/demo/full-featured/']) . '</dd>';
-      $output .= '<dd><code><pre>' . t('{
-  "plugins": "tinydrive print preview powerpaste casechange importcss searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link media mediaembed template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker imagetools textpattern noneditable help formatpainter permanentpen pageembed charmap tinycomments mentions quickbars linkchecker emoticons advtable",
-  "tinydrive_token_provider": "URL_TO_YOUR_TOKEN_PROVIDER",
-  "tinydrive_dropbox_app_key": "YOUR_DROPBOX_APP_KEY",
-  "tinydrive_google_drive_key": "YOUR_GOOGLE_DRIVE_KEY",
-  "tinydrive_google_drive_client_id": "YOUR_GOOGLE_DRIVE_CLIENT_ID",
-  "mobile": {
-    "plugins": "print preview powerpaste casechange importcss tinydrive searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link media mediaembed template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker textpattern noneditable help formatpainter pageembed charmap mentions quickbars linkchecker emoticons advtable"
-  },
- "menu": {
-    "tc": {
-      "title": "TinyComments",
-      "items": "addcomment showcomments deleteallconversations"
-    }
-  },
-  "menubar": "file edit view insert format tools table tc help",
-  "toolbar": "undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | forecolor backcolor casechange permanentpen formatpainter removeformat | pagebreak | charmap emoticons | fullscreen  preview save print | insertfile image media pageembed template link anchor codesample | a11ycheck ltr rtl | showcomments addcomment",
-  "autosave_ask_before_unload": true,
-  "autosave_interval": "30s",
-  "autosave_prefix": "{path}{query}-{id}-",
-  "autosave_restore_when_empty": false,
-  "autosave_retention": "2m",
-  "image_advtab": true,
-  "link_list": [
-    { "title": "My page 1", "value": "https://www.tiny.cloud" },
-    { "title": "My page 2", "value": "http://www.moxiecode.com" }
-  ],
-  "image_list": [
-    { "title": "My page 1", "value": "https://www.tiny.cloud" },
-    { "title": "My page 2", "value": "http://www.moxiecode.com" }
-  ],
-  "image_class_list": [
-    { "title": "None", "value": "" },
-    { "title": "Some class", "value": "class-name" }
-  ],
-  "importcss_append": true,
-  "templates": [
-    { "title": "New Table", "description": "creates a new table", "content": "&lt;div class=\'mceTmpl\'&gt;&lt;table width=\'98%%\'  border=\'0\' cellspacing=\'0\' cellpadding=\'0\'&gt;&lt;tr&gt;&lt;th scope=\'col\'&gt; &lt;/th&gt;&lt;th scope=\'col\'&gt; &lt;/th&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt; &lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;" },
-    { "title": "Starting my story", "description": "A cure for writers block", "content": "Once upon a time..." },
-    { "title": "New list with dates", "description": "New List with dates", "content": "&lt;div class=\'mceTmpl\'&gt;&lt;span class=\'cdate\'&gt;cdate&lt;/span&gt;&lt;br /&gt;&lt;span class=\'mdate\'&gt;mdate&lt;/span&gt;&lt;h2&gt;My List&lt;/h2&gt;&lt;ul&gt;&lt;li&gt;&lt;/li&gt;&lt;li&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;" }
-  ],
-  "height": 600,
-  "image_caption": true,
-  "quickbars_selection_toolbar": "bold italic | quicklink h2 h3 blockquote quickimage quicktable",
-  "noneditable_noneditable_class": "mceNonEditable",
-  "toolbar_mode": "sliding",
-  "spellchecker_whitelist": ["Ephox", "Moxiecode"],
-  "tinycomments_mode": "embedded",
-  "content_style": ".mymention{ color: gray; }",
-  "contextmenu": "link image imagetools table configurepermanentpen",
-  "a11y_advanced_options": true,
-  "skin": "oxide",
-  "content_css": "default"
-}') . '</pre></code></dd>';
+      $output .= '<dd>' . t('Once TinyMCE is associated with a text format, you can configure it by clicking on the <em>Configure</em> link for this format. Depending on the specific text editor, you can configure it by defining a json object like the one passed to TinyMCE JS init() method. For details, see the JS tabs on <a href=":example" target="_blank">this page</a>.', [':example' => 'https://www.tiny.cloud/docs/demo/full-featured/']) . '</dd>';
+      $output .= '<dt>' . t('Obtain a TinyMCE API key') . '</dt>';
+      $output .= '<dd>' . t('Once the editor properly configured an API key is required to remove the notice on the editor, <a href=":api-key" target="_blank">see more details here</a>.', [':api-key' => 'https://www.tiny.cloud/docs/quick-start/#step3addyourapikey']) . '</dd>';
       $output .= '</dl>';
       return $output;
   }
-}
-
-/**
- * Implements hook_library_info_build().
- */
-function tinymce_library_info_build() {
-  $libraries = [];
-  $editor = 'tinymce';
-
-  $libraries[$editor] = [
-    'js' => [
-      'js/' . $editor . '.js' => [],
-    ],
-    'dependencies' => [
-      'editor/drupal.editor',
-    ],
-  ];
-  $config = \Drupal::config('tinymce.settings');
-  $selfHosted = $config->get($editor . '_self_hosted');
-  $jsPath = $config->get( $editor . '_javascript_path');
-  $libraries[$editor]['js'][$jsPath] = $selfHosted
-    ? ['minified' => TRUE]
-    : ['minified' => TRUE, 'external' => TRUE];
-
-  return $libraries;
 }
