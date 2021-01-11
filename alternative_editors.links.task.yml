@@ -1,9 +1,0 @@
-alternative_editors.tinymce_settings_form:
-  title: 'TinyMCE settings'
-  base_route: filter.admin_overview
-  route_name: alternative_editors.tinymce_settings_form
-
-alternative_editors.ckeditor_settings_form:
-  title: 'CKEDitor settings'
-  base_route: filter.admin_overview
-  route_name: alternative_editors.ckeditor_settings_form

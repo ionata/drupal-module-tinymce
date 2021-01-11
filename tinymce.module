@@ -1,0 +1,48 @@
+<?php
+
+/**
+ * @file
+ * Integrate the TinyMCE editor (https://www.tiny.cloud/) into Drupal.
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function tinymce_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'admin/settings/tinymce#pages':
+      return "node/*\nuser/*\ncomment/*";
+    case 'admin/settings/tinymce':
+    case 'admin/help#tinymce' :
+      return t('<p style="font-size:x-small">$Revision$ $Date$</p>' .
+               '<p>TinyMCE adds what-you-see-is-what-you-get (WYSIWYG) html editing to textareas. This editor can be enabled/disabled without reloading the page by clicking a link below each textarea.</p>
+                <p>Profiles can be defined based on user roles. A TinyMCE profile can define which pages receive this TinyMCE capability, what buttons or themes are enabled for the editor, how the editor is displayed, and a few other editor functions.</p>
+                <p>Lastly, only users with the <code>access tinymce</code> <a href="!url">permission</a> will be able to use TinyMCE.</p>', array('!url' => url('admin/user/access'))
+              );
+  }
+}
+
+/**
+ * Implements hook_library_info_build().
+ */
+function tinymce_library_info_build() {
+  $libraries = [];
+  $editor = 'tinymce';
+
+  $libraries[$editor] = [
+    'js' => [
+      'js/' . $editor . '.js' => [],
+    ],
+    'dependencies' => [
+      'editor/drupal.editor',
+    ],
+  ];
+  $config = \Drupal::config('tinymce.settings');
+  $selfHosted = $config->get($editor . '_self_hosted');
+  $jsPath = $config->get( $editor . '_javascript_path');
+  $libraries[$editor]['js'][$jsPath] = $selfHosted
+    ? ['minified' => TRUE]
+    : ['minified' => TRUE, 'external' => TRUE];
+
+  return $libraries;
+}

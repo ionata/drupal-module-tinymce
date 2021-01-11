@@ -1,0 +1,7 @@
+tinymce.settings_form:
+  path: '/admin/config/content/formats/tinymce'
+  defaults:
+    _form: '\Drupal\tinymce\Form\TinymceSettingsForm'
+    _title: 'TinyMCE settings'
+  requirements:
+    _permission: 'administer filters'

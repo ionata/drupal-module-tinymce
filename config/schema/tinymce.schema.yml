@@ -1,4 +1,4 @@
-alternative_editors.settings:
+tinymce.settings:
   type: config_object
   label: 'Alternative editors settings'
   mapping:
@@ -6,11 +6,5 @@ alternative_editors.settings:
       type: string
       label: 'tinymce.min.js full path'
     tinymce_self_hosted:
-      type: boolean
-      label: 'Self hosted'
-    ckeditor_javascript_path:
-      type: string
-      label: 'ckeditor.min.js full path'
-    ckeditor_self_hosted:
       type: boolean
       label: 'Self hosted'

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\alternative_editors\Form;
+namespace Drupal\tinymce\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -21,7 +21,7 @@ class TinymceSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    return ['alternative_editors.settings'];
+    return ['tinymce.settings'];
   }
 
   /**
@@ -30,7 +30,7 @@ class TinymceSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->configFactory->getEditable('alternative_editors.settings');
+    $config = $this->configFactory->getEditable('tinymce.settings');
 
     $form['tinymce_self_hosted'] = [
       '#type' => 'checkbox',
@@ -58,7 +58,7 @@ class TinymceSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->configFactory->getEditable('alternative_editors.settings');
+    $config = $this->configFactory->getEditable('tinymce.settings');
     $config->set('tinymce_self_hosted', $form_state->getValue('tinymce_self_hosted'));
     $config->set('tinymce_javascript_path', $form_state->getValue('tinymce_javascript_path'));
     $config->save();

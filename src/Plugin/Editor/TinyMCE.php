@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\alternative_editors\Plugin\Editor;
+namespace Drupal\tinymce\Plugin\Editor;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Config\ConfigFactoryInterface;
@@ -35,7 +35,7 @@ class TinyMCE extends EditorBase implements ContainerFactoryPluginInterface {
 
 
   /**
-   * Constructs a \Drupal\ckeditor\Plugin\Editor\CKEditor object.
+   * Constructs a \Drupal\tinymce\Plugin\Editor\TinyMCE object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
