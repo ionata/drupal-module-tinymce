@@ -66,6 +66,17 @@ CONFIGURATION
     remove this notice, please see this page:
     https://www.tiny.cloud/docs/quick-start/#step3addyourapikey.
 
+  - Enable image upload
+    
+    To enable image upload in the editor, please add the following parameters
+    to the editor settings in the json object:
+    ```
+    "automatic_uploads": true,
+    "images_upload_url": "/tinymce/upload",
+    ```
+    Please note that /tinymce/upload will be accessible only to user with
+    TinyMCE "Upload files" permission.
+
 * Customize the way TinyMCE is loaded in Administration » Configuration »
   Text formats » TinyMCE Settings tab.
 

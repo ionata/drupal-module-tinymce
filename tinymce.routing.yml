@@ -5,3 +5,11 @@ tinymce.settings_form:
     _title: 'TinyMCE settings'
   requirements:
     _permission: 'administer filters'
+tinymce.upload:
+  path: '/tinymce/upload'
+  defaults:
+    _controller: 'Drupal\tinymce\Controller\TinyMCEController::upload'
+    _title: 'TinyMCE File Upload'
+  methods: [ POST ]
+  requirements:
+    _access: 'TRUE'

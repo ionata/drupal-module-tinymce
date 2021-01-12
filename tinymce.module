@@ -50,6 +50,8 @@ function tinymce_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $rou
       $output .= '<dd>' . t('Once the editor properly configured you can <a href=":library" target="_blank">download the library here</a> to host it. Doing so allow to avoid a notice to be displayed on the editor.', [':library' => 'https://www.tiny.cloud/get-tiny/self-hosted/']) . '</dd>';
       $output .= '<dt>' . t('Obtain a TinyMCE API key (cloud version)') . '</dt>';
       $output .= '<dd>' . t('Once the editor properly configured an API key is required to remove the notice on the editor, <a href=":api-key" target="_blank">see more details here</a>.', [':api-key' => 'https://www.tiny.cloud/docs/quick-start/#step3addyourapikey']) . '</dd>';
+      $output .= '<dt>' . t('Enable image upload') . '</dt>';
+      $output .= '<dd>' . t('To enable image upload in the editor, please add the following parameters to the editor settings in the json object:') . '<code><pre>"automatic_uploads": true,<br />"images_upload_url": "/tinymce/upload",</pre></code></dd>';
       $output .= '</dl>';
       return $output;
   }
