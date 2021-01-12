@@ -52,10 +52,17 @@ CONFIGURATION
     awaited by the library to initialize it. More details here:
     https://www.tiny.cloud/docs/demo/full-featured/.
 
-  - Obtain an API key
+  - Download the library (self hosted version)
 
-    Without a proper API key the editor will display a notice to inform the
-    user of a registration possibility. To register your website domain and
+    If you choose to host the library yourself you can download it here:
+    https://www.tiny.cloud/get-tiny/self-hosted/.
+    This usage prevents any notice to appear on the editor (see cloud version).
+
+  - Obtain an API key (cloud version)
+
+    If you choose to use the editor in its cloud version, an API key is
+    required. Otherwise, a notice will be displayed on the editor to inform the
+    user of a registration requirement. To register your website domain and
     remove this notice, please see this page:
     https://www.tiny.cloud/docs/quick-start/#step3addyourapikey.
 
