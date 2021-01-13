@@ -67,7 +67,7 @@ CONFIGURATION
     https://www.tiny.cloud/docs/quick-start/#step3addyourapikey.
 
   - Enable image upload
-    
+
     To enable image upload in the editor, please add the following parameters
     to the editor settings in the json object:
     ```
