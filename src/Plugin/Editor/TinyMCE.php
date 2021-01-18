@@ -67,10 +67,12 @@ class TinyMCE extends EditorBase implements ContainerFactoryPluginInterface {
    * {@inheritdoc}
    */
   public function getJSSettings(Editor $editor) {
+    $default_Settings = $this->getDefaults();
+
     $customSettings = ($settings = $editor->getSettings())
       && !empty($settings['tinymce_editor_settings'])
       ? $settings['tinymce_editor_settings']
-      : '{}';
+      : Json::encode($default_Settings);
 
     return [
       'json' => Json::decode($customSettings),
@@ -93,7 +95,24 @@ class TinyMCE extends EditorBase implements ContainerFactoryPluginInterface {
     $editor = $form_state->get('editor');
     $settings = $editor->getSettings();
 
-    $default_Settings = [
+    $default_Settings = $this->getDefaults();
+
+    $form['tinymce_editor_settings'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Editor settings'),
+      '#default_value' => $settings['tinymce_editor_settings'] ?? Json::encode($default_Settings),
+      '#description' => $this->t('Custom settings for the editor. Please see <a href=":example" target="_blank">this page for additional documentation</a>.<br/>Note that you need to register your domain (have an API key) to remove the notice, <a href=":api-key" target="_blank">see more details here</a>.', [':example' => 'https://www.tiny.cloud/docs/demo/full-featured/', ':api-key' => 'https://www.tiny.cloud/docs/quick-start/#step3addyourapikey']),
+      '#rows' => 20,
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDefaults() {
+    return [
       'plugins' => 'print preview importcss searchreplace autolink autosave save directionality visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help charmap quickbars emoticons',
       'mobile' => [
         'plugins' => 'print preview importcss tinydrive searchreplace autolink autosave save directionality visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount textpattern noneditable help charmap quickbars emoticons',
@@ -118,16 +137,6 @@ class TinyMCE extends EditorBase implements ContainerFactoryPluginInterface {
       'skin' => 'oxide',
       'content_css' => 'default',
     ];
-
-    $form['tinymce_editor_settings'] = [
-      '#type' => 'textarea',
-      '#title' => $this->t('Editor settings'),
-      '#default_value' => $settings['tinymce_editor_settings'] ?? Json::encode($default_Settings),
-      '#description' => $this->t('Custom settings for the editor. Please see <a href=":example" target="_blank">this page for additional documentation</a>.<br/>Note that you need to register your domain (have an API key) to remove the notice, <a href=":api-key" target="_blank">see more details here</a>.', [':example' => 'https://www.tiny.cloud/docs/demo/full-featured/', ':api-key' => 'https://www.tiny.cloud/docs/quick-start/#step3addyourapikey']),
-      '#rows' => 20,
-    ];
-
-    return $form;
   }
 
 }

@@ -4,7 +4,6 @@ namespace Drupal\Tests\tinymce\Kernel;
 
 use Drupal\Component\Serialization\Json;
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\editor\Entity\Editor;
 use Drupal\filter\Entity\FilterFormat;
 
@@ -87,13 +86,13 @@ class TinyMCETest extends KernelTestBase {
     // Basic config.
     $settings = $editor->getSettings();
     $settings['tinymce_editor_settings'] = Json::encode([
-      'plugins' => 'print preview importcss searchreplace autolink autosave save directionality visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help charmap quickbars emoticons',
-      'toolbar' => 'undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen preview save print | image media link anchor codesample | ltr rtl',
+      'plugins' => 'image link media template',
+      'toolbar' => 'undo redo | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | image media link ',
     ]);
     $expected_config = [
       'json' => [
-        'plugins' => 'print preview importcss searchreplace autolink autosave save directionality visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help charmap quickbars emoticons',
-        'toolbar' => 'undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen preview save print | image media link anchor codesample | ltr rtl',
+        'plugins' => 'image link media template',
+        'toolbar' => 'undo redo | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | image media link ',
       ],
     ];
     $editor->setSettings($settings);
@@ -102,7 +101,33 @@ class TinyMCETest extends KernelTestBase {
   }
 
   protected function getDefaultInternalConfig() {
-    return ['json' => []];
+    return [
+      'json' => [
+        'plugins' => 'print preview importcss searchreplace autolink autosave save directionality visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount imagetools textpattern noneditable help charmap quickbars emoticons',
+        'mobile' => [
+          'plugins' => 'print preview importcss tinydrive searchreplace autolink autosave save directionality visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount textpattern noneditable help charmap quickbars emoticons',
+        ],
+        'menubar' => 'file edit view insert format tools table tc help',
+        'toolbar' => 'undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | fullscreen preview save print | image media link anchor codesample | ltr rtl',
+        'autosave_ask_before_unload' => TRUE,
+        'autosave_interval' => '30s',
+        'autosave_prefix' => '{path}{query}-{id}-',
+        'autosave_restore_when_empty' => FALSE,
+        'autosave_retention' => '2m',
+        'importcss_append' => TRUE,
+        'image_advtab' => TRUE,
+        'image_caption' => TRUE,
+        'image_title' => TRUE,
+        'automatic_uploads' => TRUE,
+        'images_upload_url' => '/tinymce/upload',
+        'quickbars_selection_toolbar' => 'bold italic | quicklink h2 h3 blockquote quickimage quicktable',
+        'noneditable_noneditable_class' => 'mceNonEditable',
+        'toolbar_mode' => 'sliding',
+        'contextmenu' => 'link image imagetools table',
+        'skin' => 'oxide',
+        'content_css' => 'default',
+      ]
+    ];
   }
 
 }
