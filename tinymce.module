@@ -15,7 +15,7 @@ function tinymce_library_info_build() {
 
   $libraries['tinymce'] = [
     'js' => [
-      'js/tinymce.js' => [],
+      'js/tinymce-drupal.js' => [],
     ],
     'dependencies' => [
       'editor/drupal.editor',
