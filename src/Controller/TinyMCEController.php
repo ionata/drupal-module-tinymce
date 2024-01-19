@@ -38,11 +38,11 @@ class TinyMCEController extends ControllerBase {
 
     // Attempt to save the file and the folder if it does not exist.
     if (\Drupal::service('file_system')->prepareDirectory($destinationFolder, FileSystemInterface::CREATE_DIRECTORY)) {
-      $file = file_save_data($data, $destinationFile, FILE_EXISTS_REPLACE);
+      $file = \Drupal::service('file.repository')->writeData($data, $destinationFile, FileSystemInterface::EXISTS_REPLACE);
     }
 
     // Prepare the json output for the editor.
-    $path = file_create_url($destinationFile);
+    $path = \Drupal::service('file_url_generator')->generateAbsoluteString($destinationFile);
     $response['location'] = $path;
 
     return new JsonResponse($response);

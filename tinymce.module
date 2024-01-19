@@ -4,7 +4,7 @@
  * @file
  * Integrate the TinyMCE editor (https://www.tiny.cloud/) into Drupal.
  */
-
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 
 /**
@@ -34,7 +34,7 @@ function tinymce_library_info_build() {
 /**
  * Implementation of hook_help().
  */
-function tinymce_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+function tinymce_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.tinymce' :
       $output = '';

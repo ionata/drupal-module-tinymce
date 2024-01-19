@@ -101,11 +101,11 @@ class TinyMCELoadingTest extends BrowserTestBase {
     $hidden_input = $this->xpath('//input[@type="hidden" and contains(@class, "editor")]');
     $this->assertCount(0, $hidden_input, 'A single text format hidden input does not exist on the page.');
     // Verify that TinyMCE glue JS is absent.
-    $this->assertSession()->responseNotContains(drupal_get_path('module', 'tinymce') . '/js/tinymce.js');
+    $this->assertSession()->responseNotContains(\Drupal::service('extension.list.module')->getPath('tinymce') . '/js/tinymce.js');
 
     // On pages where there would never be a text editor, TinyMCE JS is absent.
     $this->drupalGet('user');
-    $this->assertSession()->responseNotContains(drupal_get_path('module', 'tinymce') . '/js/tinymce.js');
+    $this->assertSession()->responseNotContains(\Drupal::service('extension.list.module')->getPath('tinymce') . '/js/tinymce.js');
     $this->drupalLogout();
 
     // The normal user:
